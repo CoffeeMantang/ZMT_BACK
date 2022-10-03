@@ -20,7 +20,7 @@ public class MemberEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "member_id")
-    private String memberId; // 사용자에게 고유하게 부여하는 id
+    private int memberId; // 사용자에게 고유하게 부여하는 id
     @Column(name = "exp")
     private int exp; // 리뷰에서 쌓이는 경험치
     @Column(name = "email")

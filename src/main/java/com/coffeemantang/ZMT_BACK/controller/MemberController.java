@@ -59,6 +59,31 @@ public class MemberController {
     }
 
     // 로그인
+    @PostMapping("/signin")
+    public ResponseEntity<?> signin(@RequestBody MemberDTO memberDTO){
+        // 로그인 성공 시에만 MemberEntity 가져옴
+        MemberEntity member = memberService.getByCredentials(
+                memberDTO.getEmail(),
+                memberDTO.getPassword(),
+                passwordEncoder
+        );
+        // MemberEntity 가져오기 성공 시
+        if(member != null){
+            // TokenProvider 클래스를 이용해 토큰을 생성한 후 MemberDTO에 넣어서 반환
+            final String token = tokenProvider.create(member);
+            final MemberDTO responseMemberDTO = MemberDTO.builder()
+                    .email(member.getEmail())
+                    .memberId(member.getMemberId())
+                    .token(token)
+                    .build();
+            return ResponseEntity.ok().body(responseMemberDTO);
+        }else{
+            // MemberEntity 가져오기 실패 시 -> 로그인 실패
+            ResponseDTO responseDTO = ResponseDTO.builder()
+                    .error("login failed").build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
 
     // 아이디 중복 검사
 }

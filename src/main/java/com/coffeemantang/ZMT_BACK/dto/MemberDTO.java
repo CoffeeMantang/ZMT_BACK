@@ -14,13 +14,14 @@ import java.time.LocalDate;
 @AllArgsConstructor
 // MemberController를 위한 DTO
 public class MemberDTO {
+    private int memberId;
     private String token;
     private String email;
     private String password;
     private String name;
     private String nickname;
     private String tel;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate birthDay;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDate joinDay;
