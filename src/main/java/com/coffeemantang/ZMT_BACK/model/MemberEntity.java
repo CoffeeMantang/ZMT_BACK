@@ -27,6 +27,8 @@ public class MemberEntity {
     private String email; // 로그인할때 입력하는 아이디
     @Column(name = "password")
     private String password; // 비밀번호
+    @Column(name = "name")
+    private String name; // 이름
     @Column(name = "nickname")
     private String nickname;
     @Column(name = "tel") // 전화번호
