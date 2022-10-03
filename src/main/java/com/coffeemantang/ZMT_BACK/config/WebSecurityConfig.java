@@ -26,7 +26,7 @@ public class WebSecurityConfig {
                 .disable().httpBasic() // basic 사용하지 않음
                 .disable().sessionManagement() // session 기반 아님
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests() // /와 /auth/** 경로는 인증 안해도 됨
-                .antMatchers("/", "/auth/**", "/error").permitAll().anyRequest() // /와 /auth/** 경로는 인증 안해도 됨
+                .antMatchers("/", "/member/**", "/error").permitAll().anyRequest() // /와 /auth/** 경로는 인증 안해도 됨
                 // "/error" 추가해야 403오류와 json 함께 반환
                 .authenticated();
         //filter 등록
