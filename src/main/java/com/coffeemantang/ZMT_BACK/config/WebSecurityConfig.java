@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.CorsFilter;
 
@@ -33,5 +35,10 @@ public class WebSecurityConfig {
         //jwtAuthenticationFilter 실행
         http.addFilterAfter(jwtAuthenticationFilter, CorsFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() { // 회원가입 시 패스워드를 암호화하기 위한 객체
+        return new BCryptPasswordEncoder();
     }
 }
