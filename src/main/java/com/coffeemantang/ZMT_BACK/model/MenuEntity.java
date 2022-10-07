@@ -29,7 +29,9 @@ public class MenuEntity {
     @Column(name = "pic")
     private String pic; // 이미지 경로
     @Column(name = "category")
-    private int category;
+    private String category;
+    @Column(name = "tag")
+    private String tag;
     @Column(name = "menu_number")
     private int menuNumber;
     @Column(name = "state")
