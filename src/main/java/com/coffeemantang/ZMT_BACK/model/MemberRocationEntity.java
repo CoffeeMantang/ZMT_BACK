@@ -19,6 +19,7 @@ public class MemberRocationEntity {
     @Column(name = "memberrocation_id")
     private int memberrocationId;
     @Column(name = "member_id")
+    @JoinColumn(name = "member_id")
     private int memberId;
     @Column(name = "nickname")
     private String nickname; // 주소지의 별명

@@ -22,7 +22,11 @@ public class OrderListEntity {
     @Column(name = "orderlist_id")
     private String orderlistId;
     @Column(name = "store_id")
+    @JoinColumn(name = "store_id")
     private String storeId;
+    @Column(name = "member_id")
+    @JoinColumn(name = "member_id")
+    private String memberId;
     @Column(name = "order_date")
     private LocalDateTime orderDate;
     @Column(name = "price")

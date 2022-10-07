@@ -20,6 +20,7 @@ public class StoreInfoEntity {
     @Column(name = "storeinfo_id")
     private int storeinfoId;
     @Column(name = "store_id")
+    @JoinColumn(name = "store_id")
     private String storeId;
     @Column(name = "notice")
     private String notice;

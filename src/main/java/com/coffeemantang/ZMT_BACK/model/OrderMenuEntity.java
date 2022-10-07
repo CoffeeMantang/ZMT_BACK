@@ -20,8 +20,10 @@ public class OrderMenuEntity {
     @Column(name = "ordermenu_id")
     private int ordermenuId;
     @Column(name = "orderlist_id")
+    @JoinColumn(name = "orderlist_id")
     private String orderlistId;
     @Column(name = "menu_id")
+    @JoinColumn(name = "menu_id")
     private int menuId;
     @Column(name = "price")
     private int price;

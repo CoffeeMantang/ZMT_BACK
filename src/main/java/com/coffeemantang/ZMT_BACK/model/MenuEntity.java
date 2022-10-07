@@ -19,6 +19,7 @@ public class MenuEntity {
     @Column(name = "menu_id")
     private int menuId;
     @Column(name = "store_id")
+    @JoinColumn(name = "store_id")
     private String storeId;
     @Column(name = "menu_name")
     private String menuName;

@@ -19,6 +19,7 @@ public class ReviewImgEntity {
     @Column(name = "reviewimg_id")
     private int reviewimgId;
     @Column(name = "review_id")
+    @JoinColumn(name = "review_id")
     private int reviewId;
     @Column(name = "path")
     private String path;
