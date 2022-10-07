@@ -20,6 +20,7 @@ public class BoardEntity {
     @Column(name = "board_id")
     private int boardId;
     @Column(name = "member_id")
+    @JoinColumn(name = "member_id")
     private int memberId;
     @Column(name = "title")
     private String title; // 제목

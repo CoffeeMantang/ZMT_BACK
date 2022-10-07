@@ -19,6 +19,7 @@ public class OptionEntity {
     @Column(name = "option_id")
     private int optionId;
     @Column(name = "menu_id")
+    @JoinColumn(name = "menu_id")
     private int menuId;
     @Column(name = "option_name")
     private String optionName;

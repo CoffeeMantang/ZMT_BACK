@@ -21,7 +21,8 @@ public class StoreEntity {
     @GeneratedValue(generator = "store_id")
     @Column(name = "store_id")
     private String storeId;
-    @Column(name = "member_Id")
+    @Column(name = "member_id")
+    @JoinColumn(name = "member_id")
     private int memberId;
     @Column(name = "name")
     private String name;
