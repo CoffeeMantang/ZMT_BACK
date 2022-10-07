@@ -17,12 +17,14 @@ import java.time.LocalDateTime;
 @Table(name = "store")
 public class StoreEntity {
     @Id
-    @GenericGenerator(name = "orderlist_id", strategy = "com.coffeemantang.ZMT_BACK.generator.StoreGenerator") // Store용 Generator 사용
+    @GenericGenerator(name = "store_id", strategy = "com.coffeemantang.ZMT_BACK.generator.StoreGenerator") // Store용 Generator 사용
     @GeneratedValue(generator = "store_id")
     @Column(name = "store_id")
     private String storeId;
     @Column(name = "member_Id")
-    private String memberId;
+    private int memberId;
+    @Column(name = "name")
+    private String name;
     @Column(name = "joinday")
     private LocalDateTime joinDay;
     @Column(name = "category")
