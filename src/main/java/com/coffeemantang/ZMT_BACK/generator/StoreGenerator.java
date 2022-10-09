@@ -28,7 +28,11 @@ public class StoreGenerator implements IdentifierGenerator {
             pstmt.setString(1, id);
             ResultSet rs = pstmt.executeQuery();
 
-            if(rs.next()){ // db 체크 후 겹치는 아이디 있으면 다시돌리기
+            conn.close();
+            pstmt.close();
+            if (rs.next()) {
+                // db 체크 후 겹치는 아이디 있으면 다시돌리기
+                rs.close();
                 return generate(session, object);
             }
         } catch (SQLException e) {
