@@ -1,27 +1,35 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
+import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
+import com.coffeemantang.ZMT_BACK.dto.OptionDTO;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
+import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
+import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
+import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
 import com.coffeemantang.ZMT_BACK.security.TokenProvider;
 import com.coffeemantang.ZMT_BACK.service.StoreService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/partners/store")
 public class StoreController {
-    @Autowired
-    private StoreService storeService;
+
+    private final StoreService storeService;
+
+    private final StoreRepository storeRepository;
+
+    private final MenuRepository menuRepository;
 
     // 새로운 가게 생성
     @PostMapping("/create")
@@ -59,4 +67,65 @@ public class StoreController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+
+    //메뉴 추가
+    @PostMapping("/addmenu")
+    public ResponseEntity<?> addMenu(@AuthenticationPrincipal String memberId, @RequestBody MenuDTO menuDTO) {
+
+        StoreEntity storeEntity = storeRepository.findByMemberId(Integer.parseInt(memberId));
+
+        try {
+            //MenuDTO를 MenuEntity로 변환
+            MenuEntity tempMenuEntity = MenuDTO.toEntity(menuDTO);
+            //storeId 가져와서 추가
+            tempMenuEntity.setStoreId(storeEntity.getStoreId());
+            //MenuNumber 생성
+            tempMenuEntity.setMenuNumber(storeService.createMenuNumber());
+            //MenuEntity 생성
+            MenuEntity menuEntity = storeService.addMenu(tempMenuEntity);
+
+            MenuDTO responseMenuDTO = MenuDTO.builder()
+                    .menuId(menuDTO.getMenuId())
+                    .storeId(menuDTO.getStoreId())
+                    .menuName(menuDTO.getMenuName())
+                    .price(menuDTO.getPrice())
+                    .notice(menuDTO.getNotice())
+                    .category(menuDTO.getCategory())
+                    .tag(menuDTO.getTag())
+                    .menuNumber(menuDTO.getMenuNumber())
+                    .state(menuDTO.getState())
+                    .build();
+
+            return ResponseEntity.ok().body(responseMenuDTO);
+
+        } catch (Exception e) {
+            ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    //가게 삭제
+    @DeleteMapping("/delete/{storeId}")
+    public String deleteStore(@PathVariable("storeId") String storeId) {
+        storeService.deleteStore(storeId);
+
+        return "redirect:/";
+    }
+    //메뉴 순서 위로 이동
+//    @PostMapping("/menuUp")
+
+    // 옵션 추가
+    @PostMapping("/{menuId}")
+//    public ResponseEntity<?> addOption(@AuthenticationPrincipal String memberId, @PathVariable("menuId") int menuId, @RequestBody OptionDTO optionDTO) {
+    public void addOption(@AuthenticationPrincipal String memberId, @PathVariable("menuId") int menuId, @RequestBody OptionDTO optionDTO) {
+
+        StoreEntity storeEntity = storeRepository.findByMemberId(Integer.parseInt(memberId));
+        MenuEntity menuEntity = menuRepository.findByStoreId(storeEntity.getStoreId());
+        log.info(menuEntity.getMenuId() + " : 메뉴아이디");
+        log.info(menuId + "패스 메뉴 아이디");
+
+    }
+
+
 }
