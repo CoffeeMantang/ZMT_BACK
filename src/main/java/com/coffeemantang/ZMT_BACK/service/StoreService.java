@@ -4,7 +4,10 @@ import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.OptionEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
+import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
+import com.coffeemantang.ZMT_BACK.persistence.OptionRepository;
 import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,13 +17,18 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 // Store에 저장된 내용을 가져올 때 사용
 // StoreRepository를 이용해 가게를 CRUD
 public class StoreService {
-    @Autowired
-    private StoreRepository storeRepository;
-    @Autowired
-    private MemberRepository memberRepository;
+
+    private final StoreRepository storeRepository;
+
+    private final MemberRepository memberRepository;
+
+    private final MenuRepository menuRepository;
+
+    private final OptionRepository optionRepository;
 
     // 가게 생성
     public StoreEntity create(final StoreEntity storeEntity){
@@ -79,5 +87,4 @@ public class StoreService {
     public void deleteStore(String storeId) {
         storeRepository.deleteById(storeId);
     }
-
 }
