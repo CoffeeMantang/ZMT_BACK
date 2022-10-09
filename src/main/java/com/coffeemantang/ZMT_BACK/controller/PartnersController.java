@@ -16,10 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
+// 사업자 회원을 관리하는 Controller
 @Slf4j
 @RestController
-@RequestMapping("/member")
-public class MemberController {
+@RequestMapping("/partners/member")
+public class PartnersController {
     @Autowired
     private MemberService memberService;
     @Autowired
@@ -41,7 +42,7 @@ public class MemberController {
                     .birthDay(memberDTO.getBirthDay())
                     .joinDay(LocalDateTime.now()) // 현재 시간
                     .gender(memberDTO.getGender())
-                    .type(2) // 2: 일반회원
+                    .type(1) // 1: 사업자 회원
                     .question(memberDTO.getQuestion())
                     .answer(memberDTO.getAnswer()).build();
             // 서비스를 이용해 Repository에 사용자 저장
@@ -57,34 +58,4 @@ public class MemberController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
-
-    // 로그인
-    @PostMapping("/signin")
-    public ResponseEntity<?> signin(@RequestBody MemberDTO memberDTO){
-        // 로그인 성공 시에만 MemberEntity 가져옴
-        MemberEntity member = memberService.getByCredentials(
-                memberDTO.getEmail(),
-                memberDTO.getPassword(),
-                passwordEncoder
-        );
-        // MemberEntity 가져오기 성공 시
-        if(member != null){
-            // TokenProvider 클래스를 이용해 토큰을 생성한 후 MemberDTO에 넣어서 반환
-            final String token = tokenProvider.create(member);
-            final MemberDTO responseMemberDTO = MemberDTO.builder()
-                    .email(member.getEmail())
-                    .memberId(member.getMemberId())
-                    .type(member.getType()) // 멤버의 타입
-                    .token(token)
-                    .build();
-            return ResponseEntity.ok().body(responseMemberDTO);
-        }else{
-            // MemberEntity 가져오기 실패 시 -> 로그인 실패
-            ResponseDTO responseDTO = ResponseDTO.builder()
-                    .error("login failed").build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-    }
-
-    // 아이디 중복 검사
 }
