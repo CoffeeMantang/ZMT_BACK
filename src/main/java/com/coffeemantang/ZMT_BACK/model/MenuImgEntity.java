@@ -14,13 +14,20 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Table(name = "menuimg")
 public class MenuImgEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "menuimg_id")
     private int menuimgId;
+
     @Column(name = "menu_id")
     @JoinColumn(name = "menu_id")
     private int menuId;
-    @Column(name = "path")
-    private String path;
+
+    @Column(name = "original_file_name")
+    private String originalFileName;
+
+    @Column(name = "stored_file_path")
+    private String storedFilePath;
+
 }

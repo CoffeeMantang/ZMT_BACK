@@ -24,7 +24,7 @@ public class OptionEntity {
     @Column(name = "option_name")
     private String optionName;
     @Column(name = "option_number")
-    private String optionNumber;
+    private int optionNumber;
     @Column(name = "price")
     private int price;
 }
