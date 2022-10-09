@@ -2,6 +2,8 @@ package com.coffeemantang.ZMT_BACK.persistence;
 
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -15,4 +17,13 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
     MemberEntity findByEmailAndPassword(String email, String password);
     // 아이디로 찾기
     MemberEntity findByMemberId(int memberId);
+    // 아이디로 비밀번호 질문 가져오기
+    @Query(value = "SELECT question FROM member WHERE member_id = :memberId", nativeQuery = true)
+    String findQuestionByMemberId(@Param("memberId") int memberId);
+    // 아이디와 답변으로 매칭되는 컬럼 찾기
+    @Query(value = "SELECT COUNT(member_id) FROM member WHERE member_id = :memberId AND answer = :answer", nativeQuery = true)
+    int findByAnswer(@Param("memberId") int memberId, @Param("answer") String answer);
+    // 아이디로 비밀번호 가져오기
+    @Query(value = "SELECT password FROM member WHERE member_id = :memberId", nativeQuery = true)
+    String findPasswordByMemberId(@Param("memberId") int memberId);
 }

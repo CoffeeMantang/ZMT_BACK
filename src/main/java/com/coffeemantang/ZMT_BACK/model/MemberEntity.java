@@ -46,4 +46,8 @@ public class MemberEntity {
     @Column(name = "answer")
     private String answer; // 본인확인 답변
 
+    public void changePassword(String password){
+        this.password = password;
+    }
+
 }

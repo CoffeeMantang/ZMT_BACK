@@ -1,5 +1,6 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
+import com.coffeemantang.ZMT_BACK.dto.FindPwDTO;
 import com.coffeemantang.ZMT_BACK.dto.MemberDTO;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
@@ -8,6 +9,7 @@ import com.coffeemantang.ZMT_BACK.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,10 +94,10 @@ public class MemberController {
     // 비밀번호 찾기 - 질문 가져가기
     @PostMapping("/getquestion")
     public ResponseEntity<?> getquestion(@AuthenticationPrincipal String memberId){
-        MemberEntity memberEntity = memberService.getByMemberId(Integer.parseInt(memberId)); // 아이디로 회원정보 가져옴
-        if(memberEntity != null){
+        String question = memberService.getQuestion(Integer.parseInt(memberId)); // 아이디로 회원정보 가져옴
+        if(question != null && !question.equals("")){
             final MemberDTO responseMemberDTO = MemberDTO.builder()
-                    .question(memberEntity.getQuestion())
+                    .question(question)
                     .memberId(Integer.parseInt(memberId)).build();
             return ResponseEntity.ok().body(responseMemberDTO);
         }else{
@@ -109,16 +111,30 @@ public class MemberController {
     // 비밀번호 찾기 - 답변받고 비밀번호 랜덤으로 초기화해서 돌려주기
     @PostMapping("/findpw")
     public ResponseEntity<?> findPw(@AuthenticationPrincipal String memberId, @RequestBody MemberDTO memberDTO){
-        MemberEntity memberEntity = memberService.checkAnswer(Integer.parseInt(memberId), memberDTO.getAnswer());
-        if(memberEntity != null){
+        String pw = memberService.checkAnswer(Integer.parseInt(memberId), memberDTO.getAnswer(), passwordEncoder);
+        if(pw != null || pw == ""){
             final MemberDTO responseMemberDTO = MemberDTO.builder()
-                    .password(memberEntity.getPassword())
+                    .password(pw)
                     .memberId(Integer.parseInt(memberId)).build();
             return ResponseEntity.ok().body(responseMemberDTO);
         }else{
             // MemberEntity 가져오기 실패 시
             ResponseDTO responseDTO = ResponseDTO.builder()
                     .error("error").build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 비밀번호 변경하기 - 기존 비밀번호 체크 후 원하는 비밀번호로 변경하기
+    @PostMapping("/changepw")
+    public ResponseEntity<?> chgPw(@AuthenticationPrincipal String memberId, @RequestBody FindPwDTO findPwDTO){
+        if(memberService.changePw(Integer.parseInt(memberId), findPwDTO.getCurPw(), findPwDTO.getChgPw(), passwordEncoder)){
+            // 변경 성공 시
+            ResponseDTO responseDTO = ResponseDTO.builder().error("success").build();
+            return ResponseEntity.ok().body(responseDTO);
+        }else{
+            // 변경 실패 시
+            ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }

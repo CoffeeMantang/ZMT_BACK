@@ -4,9 +4,11 @@ import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Member;
 
@@ -54,7 +56,8 @@ public class MemberService {
     }
 
     // 멤버의 비밀번호 랜덤하게 변경하고 entity 리턴
-    public MemberEntity changeMemberPw(final int memberId){
+    @Transactional
+    public String changeMemberPw(final int memberId, PasswordEncoder passwordEncoder){
         if(memberId <= 0){
             log.warn("MemberService.changeMemberPw() : memberId 값이 이상해요");
             throw new RuntimeException("MemberService.changeMemberPw() : memberId 값이 이상해요");
@@ -62,24 +65,61 @@ public class MemberService {
         final MemberEntity memberEntity = memberRepository.findByMemberId(memberId); // 아이디로 MemberEntity 찾음
         // 12자리 랜덤 비밀번호 생성
         final String pw = RandomStringUtils.random(12, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        memberEntity.setPassword(pw);
-        return memberEntity;
+        memberEntity.changePassword(passwordEncoder.encode(pw)); // 변경
+        memberRepository.save(memberEntity);
+        return pw;
     }
 
-    // 들어온 본인확인답변과 아이디가 일치하는지 체크 후 비밀번호 변경하고 entity 리턴
-    public MemberEntity checkAnswer(final int memberId, final String answer){
+    // 아이디로 멤버의 비밀번호 찾기 질문 가져오기
+    public String getQuestion(final int memberId){
+        if(memberId <= 0){
+            log.warn("MemberService.getQuestion() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.getQuestion() : memberId 값이 이상해요");
+        }
+        final String question = memberRepository.findQuestionByMemberId(memberId); // 아이디로 Question 찾기
+        return question;
+    }
+
+    // 들어온 본인확인답변과 아이디가 일치하는지 체크 후 비밀번호 변경하고 string 리턴
+    @Transactional
+    public String checkAnswer(final int memberId, final String answer, PasswordEncoder passwordEncoder){
         if(memberId <= 0 || answer == null){
             log.warn("MemberService.checkAnswer() : 들어온 값이 이상해요");
             throw new RuntimeException("MemberService.checkAnswer() : 들어온 값이 이상해요");
         }
-        final String originalAnswer = memberRepository.findByMemberId(memberId).getAnswer();
-        if(!originalAnswer.equals(answer)){
+        final int findCount = memberRepository.findByAnswer(memberId, answer); //
+        if(findCount < 1){
             // 답변이 일치하지 않으면
             log.warn("MemberService.checkAnswer() : 답변이 달라요");
             throw new RuntimeException("MemberService.checkAnswer() : 답변이 달라요");
         }
-        // 답변이 일치하면 비밀번호 랜덤하게 변경 후 entity 리턴
-        final MemberEntity memberEntity = changeMemberPw(memberId);
-        return memberEntity;
+        // 답변이 일치하면 비밀번호 랜덤하게 변경 후 변경된 비밀번호 리턴
+        final String pw = changeMemberPw(memberId, passwordEncoder);
+        return pw;
+    }
+
+    // 현재 비밀번호와 변경할 비밀번호 받아서 비밀번호 변경
+    @Transactional
+    public boolean changePw(final int memberId, final String curPw, final String chgPw, PasswordEncoder passwordEncoder){
+        if(curPw == null || curPw.equals("") || chgPw == null | chgPw.equals("")){
+            log.warn("MemberService.changePw() : 들어온 값이 이상해요");
+            throw new RuntimeException("MemberService.changePw() : 들어온 값이 이상해요");
+        }
+        if(memberId < 1){
+            log.warn("MemberService.changePw() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.changePw() : memberId 값이 이상해요");
+        }
+        // 현재 비밀번호가 맞는지 검사
+        String originPassword = memberRepository.findPasswordByMemberId(memberId); //DB에 들어가있는 PW
+        if(!passwordEncoder.matches(curPw, originPassword)){
+            //비밀번호가 다르면
+            log.warn("MemberService.changePw() : 비밀번호가 달라요");
+            throw new RuntimeException("MemberService.changePw() : 비밀번호가 달라요");
+        }
+        //비밀번호가 맞으면 비밀번호 변경
+        final MemberEntity memberEntity = memberRepository.findByMemberId(memberId);
+        memberEntity.changePassword(passwordEncoder.encode(chgPw));
+        memberRepository.save(memberEntity);
+        return true;
     }
 }
