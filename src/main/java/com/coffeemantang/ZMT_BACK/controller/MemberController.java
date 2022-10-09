@@ -8,12 +8,15 @@ import com.coffeemantang.ZMT_BACK.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.xml.ws.Response;
+import java.lang.reflect.Member;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -86,5 +89,38 @@ public class MemberController {
         }
     }
 
-    // 아이디 중복 검사
+    // 비밀번호 찾기 - 질문 가져가기
+    @PostMapping("/getquestion")
+    public ResponseEntity<?> getquestion(@AuthenticationPrincipal String memberId){
+        MemberEntity memberEntity = memberService.getByMemberId(Integer.parseInt(memberId)); // 아이디로 회원정보 가져옴
+        if(memberEntity != null){
+            final MemberDTO responseMemberDTO = MemberDTO.builder()
+                    .question(memberEntity.getQuestion())
+                    .memberId(Integer.parseInt(memberId)).build();
+            return ResponseEntity.ok().body(responseMemberDTO);
+        }else{
+            // MemberEntity 가져오기 실패 시
+            ResponseDTO responseDTO = ResponseDTO.builder()
+                    .error("error").build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+    
+    // 비밀번호 찾기 - 답변받고 비밀번호 랜덤으로 초기화해서 돌려주기
+    @PostMapping("/findpw")
+    public ResponseEntity<?> findPw(@AuthenticationPrincipal String memberId, @RequestBody MemberDTO memberDTO){
+        MemberEntity memberEntity = memberService.checkAnswer(Integer.parseInt(memberId), memberDTO.getAnswer());
+        if(memberEntity != null){
+            final MemberDTO responseMemberDTO = MemberDTO.builder()
+                    .password(memberEntity.getPassword())
+                    .memberId(Integer.parseInt(memberId)).build();
+            return ResponseEntity.ok().body(responseMemberDTO);
+        }else{
+            // MemberEntity 가져오기 실패 시
+            ResponseDTO responseDTO = ResponseDTO.builder()
+                    .error("error").build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
 }
