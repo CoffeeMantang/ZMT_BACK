@@ -39,7 +39,7 @@ public class OrderListGenerator implements IdentifierGenerator{
     }
 
     private String generatePrimaryKey() {
-        String shortId = RandomStringUtils.random(8, "0123456789abcdefghijklmnABCDEFGHIJKLMN");  //8자리 아이디 생성
+        String shortId = RandomStringUtils.random(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");  //8자리 아이디 생성
         return shortId;
     }
 }
