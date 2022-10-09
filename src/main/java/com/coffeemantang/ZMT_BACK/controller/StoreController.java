@@ -33,7 +33,7 @@ public class StoreController {
 
     // 새로운 가게 생성
     @PostMapping("/create")
-    public ResponseEntity<?> createStore(@AuthenticationPrincipal int memberId, @RequestBody StoreDTO storeDTO){
+    public ResponseEntity<?> createStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO){
         try {
             // StoreDTO를 StoreEntity로 변환
             StoreEntity tempStoreEntity = StoreDTO.toEntity(storeDTO);
@@ -42,7 +42,7 @@ public class StoreController {
             // 생성일 현재시간을 초기화
             tempStoreEntity.setJoinDay(LocalDateTime.now());
             // AuthenticationPrincipal에서 넘어온 memberId set
-            tempStoreEntity.setMemberId(memberId);
+            tempStoreEntity.setMemberId(Integer.parseInt(memberId));
             // 가게의 상태 초기화
             tempStoreEntity.setState(0);
             // StoreService를 이용해 StoreEntity 생성

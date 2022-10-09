@@ -27,7 +27,11 @@ public class OrderListGenerator implements IdentifierGenerator{
             pstmt.setObject(1, id);
             ResultSet rs = pstmt.executeQuery();
 
+            conn.close();
+            pstmt.close();
+
             if(rs.next()){ // db 체크 후 겹치는 아이디 있으면 다시돌리기
+                rs.close();
                 return generate(session, object);
             }
         } catch (SQLException e) {
@@ -39,7 +43,7 @@ public class OrderListGenerator implements IdentifierGenerator{
     }
 
     private String generatePrimaryKey() {
-        String shortId = RandomStringUtils.random(8, "0123456789abcdefghijklmnABCDEFGHIJKLMN");  //8자리 아이디 생성
+        String shortId = RandomStringUtils.random(8, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");  //8자리 아이디 생성
         return shortId;
     }
 }

@@ -3,9 +3,12 @@ package com.coffeemantang.ZMT_BACK.service;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.lang.reflect.Member;
 
 @Slf4j
 @Service
@@ -24,6 +27,7 @@ public class MemberService {
         final String email = memberEntity.getEmail();
         if(memberRepository.existsByEmail(email)){
             log.warn("MemberService.create() : 해당 email이 이미 존재해요");
+            throw new RuntimeException("MemberService.create() : 해당 email이 이미 존재해요");
         }
 
         return memberRepository.save(memberEntity);
@@ -37,5 +41,45 @@ public class MemberService {
             return originalMember;
         }
         return null;
+    }
+
+    // 아이디로 멤버정보 가져오기
+    public MemberEntity getByMemberId(final int memberId){
+        if(memberId <= 0){
+            log.warn("MemberService.getByMemberId() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.getByMemberId() : memberId 값이 이상해요");
+        }
+        final MemberEntity memberEntity = memberRepository.findByMemberId(memberId); // 아이디로 MemberEntity 찾음
+        return memberEntity;
+    }
+
+    // 멤버의 비밀번호 랜덤하게 변경하고 entity 리턴
+    public MemberEntity changeMemberPw(final int memberId){
+        if(memberId <= 0){
+            log.warn("MemberService.changeMemberPw() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.changeMemberPw() : memberId 값이 이상해요");
+        }
+        final MemberEntity memberEntity = memberRepository.findByMemberId(memberId); // 아이디로 MemberEntity 찾음
+        // 12자리 랜덤 비밀번호 생성
+        final String pw = RandomStringUtils.random(12, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        memberEntity.setPassword(pw);
+        return memberEntity;
+    }
+
+    // 들어온 본인확인답변과 아이디가 일치하는지 체크 후 비밀번호 변경하고 entity 리턴
+    public MemberEntity checkAnswer(final int memberId, final String answer){
+        if(memberId <= 0 || answer == null){
+            log.warn("MemberService.checkAnswer() : 들어온 값이 이상해요");
+            throw new RuntimeException("MemberService.checkAnswer() : 들어온 값이 이상해요");
+        }
+        final String originalAnswer = memberRepository.findByMemberId(memberId).getAnswer();
+        if(!originalAnswer.equals(answer)){
+            // 답변이 일치하지 않으면
+            log.warn("MemberService.checkAnswer() : 답변이 달라요");
+            throw new RuntimeException("MemberService.checkAnswer() : 답변이 달라요");
+        }
+        // 답변이 일치하면 비밀번호 랜덤하게 변경 후 entity 리턴
+        final MemberEntity memberEntity = changeMemberPw(memberId);
+        return memberEntity;
     }
 }

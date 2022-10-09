@@ -19,8 +19,10 @@ public class OrderOptionEntity {
     @Column(name = "orderoption_id")
     private int orderoptionId;
     @Column(name = "ordermenu_id")
+    @JoinColumn(name = "ordermenu_id")
     private int ordermenuId;
     @Column(name = "option_id")
+    @JoinColumn(name = "option_id")
     private int optionId;
     @Column(name = "price")
     private int price;

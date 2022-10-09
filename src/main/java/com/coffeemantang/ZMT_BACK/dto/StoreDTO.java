@@ -31,6 +31,7 @@ public class StoreDTO {
 
     public StoreDTO(final StoreEntity entity){
         this.storeId = entity.getStoreId();
+        this.memberId = entity.getMemberId();
         this.name = entity.getName();
         this.address1 = entity.getAddress1();
         this.address2 = entity.getAddress2();

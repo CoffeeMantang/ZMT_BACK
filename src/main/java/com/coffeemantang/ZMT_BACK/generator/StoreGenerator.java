@@ -25,10 +25,14 @@ public class StoreGenerator implements IdentifierGenerator {
             conn = session.getJdbcConnectionAccess().obtainConnection();
             PreparedStatement pstmt = conn.prepareStatement(QUERY);
 
-            pstmt.setObject(1, id);
+            pstmt.setString(1, id);
             ResultSet rs = pstmt.executeQuery();
 
-            if(rs.next()){ // db 체크 후 겹치는 아이디 있으면 다시돌리기
+            conn.close();
+            pstmt.close();
+            if (rs.next()) {
+                // db 체크 후 겹치는 아이디 있으면 다시돌리기
+                rs.close();
                 return generate(session, object);
             }
         } catch (SQLException e) {
@@ -40,7 +44,7 @@ public class StoreGenerator implements IdentifierGenerator {
     }
 
     private String generatePrimaryKey() {
-        String shortId = RandomStringUtils.random(12, "0123456789abcdefghijklmnABCDEFGHIJKLMN");  //12자리 아이디 생성
+        String shortId = RandomStringUtils.random(12, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");  //12자리 아이디 생성
         return shortId;
     }
 }

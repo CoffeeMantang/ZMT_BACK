@@ -19,8 +19,10 @@ public class HonerEntity {
     @Column(name = "honer_id")
     private int honerId;
     @Column(name = "member_id")
+    @JoinColumn(name = "member_Id")
     private int memberId;
     @Column(name = "store_id")
+    @JoinColumn(name = "store_id")
     private String storeId;
     @Column(name = "type")
     private int type; // 어떤 메달인지, 0:없음, 1부터 메달있음

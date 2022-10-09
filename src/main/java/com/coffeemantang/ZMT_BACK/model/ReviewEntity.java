@@ -20,8 +20,10 @@ public class ReviewEntity {
     @Column(name = "review_id")
     private int reviewId;
     @Column(name = "member_id")
+    @JoinColumn(name = "member_id")
     private int memberId;
     @Column(name = "store_id")
+    @JoinColumn(name = "store_id")
     private String storeId;
     @Column(name = "date")
     private LocalDateTime date; // 작성시간
