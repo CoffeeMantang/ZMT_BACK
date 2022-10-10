@@ -1,7 +1,9 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
+import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.dto.OptionDTO;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
+import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.OptionEntity;
 import com.coffeemantang.ZMT_BACK.service.OptionService;
 import lombok.RequiredArgsConstructor;
@@ -45,4 +47,35 @@ public class OptionController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    //옵션 순서 위로 이동
+    @PostMapping("/up")
+    public ResponseEntity<?> optionSequenceUp(@AuthenticationPrincipal String memberId, @RequestBody OptionDTO optionDTO) {
+
+        try {
+            OptionEntity optionEntity = optionService.optionSequenceMove(optionDTO, Integer.parseInt(memberId), 1);
+            OptionDTO responseOptionDTO = OptionDTO.builder().optionNumber(optionEntity.getOptionNumber()).build();
+            return ResponseEntity.ok().body(responseOptionDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
+
+    //옵션 순서 아래로 이동
+    @PostMapping("/down")
+    public ResponseEntity<?> optionSequenceDown(@AuthenticationPrincipal String memberId, @RequestBody OptionDTO optionDTO) {
+
+        try {
+            OptionEntity optionEntity = optionService.optionSequenceMove(optionDTO, Integer.parseInt(memberId), 2);
+            OptionDTO responseOptionDTO = OptionDTO.builder().optionNumber(optionEntity.getOptionNumber()).build();
+            return ResponseEntity.ok().body(responseOptionDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
+
 }
