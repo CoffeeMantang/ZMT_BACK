@@ -1,5 +1,6 @@
 package com.coffeemantang.ZMT_BACK.service;
 
+import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,15 +52,72 @@ public class MenuService {
 
     }
 
-    // 메뉴 순서 위로 이동
-//    public MenuEntity menuSequenceUp(int menuId, int memberId) {
+    // 메뉴 순서 이동
+    public MenuEntity menuSequenceMove(MenuDTO menuDTO, int memberId, int move) {
+
+        try {
+            int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuDTO.getMenuId());
+
+            if (memberId != selectMemberIdByMenuId) {
+                log.warn("StoreService.menuSequenceUp() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+                throw new RuntimeException("StoreService.menuSequenceUp() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+            }
+
+            int menuNumber = menuDTO.getMenuNumber();
+            MenuEntity menuEntity;
+            if(move == 1) { // move == 1 : /up
+                menuNumber -= 1;
+                // 순서가 내려갈 메뉴
+                menuEntity = menuRepository.findByStoreIdAndMenuNumber(menuDTO.getStoreId(), menuNumber);
+                menuEntity.setMenuNumber(menuNumber + 1);
+                menuRepository.save(menuEntity);
+            } else { // move == 2 : /down
+                menuNumber += 1;
+                // 순서가 올라갈 메뉴
+                menuEntity = menuRepository.findByStoreIdAndMenuNumber(menuDTO.getStoreId(), menuNumber);
+                menuEntity.setMenuNumber(menuNumber - 1);
+                menuRepository.save(menuEntity);
+            }
+
+            // 유저가 선택한 메뉴
+            menuEntity = menuRepository.findByStoreIdAndMenuId(menuDTO.getStoreId(), menuDTO.getMenuId());
+            menuEntity.setMenuNumber(menuNumber);
+            menuRepository.save(menuEntity);
+
+            return menuEntity;
+
+        } catch (Exception e) {
+            throw new RuntimeException("StoreService.menuSequenceUp() Exception");
+        }
+    }
+
+//    // 메뉴 순서 아래로 이동
+//    public MenuEntity menuSequenceDown(MenuDTO menuDTO, int memberId) {
 //
-//        int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuId);
+//        try {
+//            int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuDTO.getMenuId());
 //
-//        if (memberId != selectMemberIdByMenuId) {
-//            log.warn("StoreService.addOption() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
-//            throw new RuntimeException("StoreService.addOption() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+//            if (memberId != selectMemberIdByMenuId) {
+//                log.warn("StoreService.menuSequenceDown() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+//                throw new RuntimeException("StoreService.menuSequenceDown() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+//            }
+//
+//            int menuNumber = menuDTO.getMenuNumber();
+//            menuNumber += 1;
+//            // 순서가 올라갈 메뉴
+//            MenuEntity menuEntity = menuRepository.findByStoreIdAndMenuNumber(menuDTO.getStoreId(), menuNumber);
+//            menuEntity.setMenuNumber(menuNumber - 1);
+//            menuRepository.save(menuEntity);
+//
+//            // 순서가 내려갈 메뉴
+//            menuEntity = menuRepository.findByStoreIdAndMenuId(menuDTO.getStoreId(), menuDTO.getMenuId());
+//            menuEntity.setMenuNumber(menuNumber);
+//            menuRepository.save(menuEntity);
+//
+//            return menuEntity;
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException("StoreService.menuSequenceDown() Exception");
 //        }
-//
 //    }
 }

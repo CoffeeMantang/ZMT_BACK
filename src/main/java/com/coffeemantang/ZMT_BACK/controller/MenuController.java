@@ -51,10 +51,32 @@ public class MenuController {
     }
 
     //메뉴 순서 위로 이동
-//    @PutMapping("/up")
-//    public ResponseEntity<?> menuSequenceUp(@AuthenticationPrincipal String memberId, @RequestBody MenuDTO menuDTO) {
-//
-//        MenuEntity menuEntity = menuService.menuSequenceUp(menuId, Integer.parseInt(memberId));
-//    }
+    @PostMapping("/up")
+    public ResponseEntity<?> menuSequenceUp(@AuthenticationPrincipal String memberId, @RequestBody MenuDTO menuDTO) {
 
+        try {
+            MenuEntity menuEntity = menuService.menuSequenceMove(menuDTO, Integer.parseInt(memberId), 1);
+            MenuDTO responseMenuDTO = MenuDTO.builder().menuNumber(menuEntity.getMenuNumber()).build();
+            return ResponseEntity.ok().body(responseMenuDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
+
+    //메뉴 순서 아래로 이동
+    @PostMapping("/down")
+    public ResponseEntity<?> menuSequenceDown(@AuthenticationPrincipal String memberId, @RequestBody MenuDTO menuDTO) {
+
+        try {
+            MenuEntity menuEntity = menuService.menuSequenceMove(menuDTO, Integer.parseInt(memberId), 2);
+            MenuDTO responseMenuDTO = MenuDTO.builder().menuNumber(menuEntity.getMenuNumber()).build();
+            return ResponseEntity.ok().body(responseMenuDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
 }
