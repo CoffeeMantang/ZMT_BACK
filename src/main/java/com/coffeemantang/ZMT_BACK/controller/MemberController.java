@@ -182,7 +182,7 @@ public class MemberController {
         }
     }
 
-    // 닉네임 수정
+    // 닉네임 수정 - 이미 해당 닉네임이 있는 경우 수정 실패
     @PostMapping("/updatenickname")
     public ResponseEntity<?> updateInfo(@AuthenticationPrincipal String memberId, @RequestBody MemberDTO memberDTO) {
         try {
@@ -213,6 +213,24 @@ public class MemberController {
                 return ResponseEntity.badRequest().body(responseDTO);
             }
         } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 닉네임 중복체크
+    @PostMapping("/checknickname")
+    public ResponseEntity<?> checkNickname(@RequestBody MemberDTO memberDTO){
+        try{
+            boolean check = memberService.checkNickname(memberDTO.getNickname());
+            if(check){
+                MemberDTO responseMemberDTO = MemberDTO.builder().nickname(memberDTO.getNickname()).build();
+                return ResponseEntity.ok().body(responseMemberDTO);
+            }else{
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        }catch (Exception e){
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
