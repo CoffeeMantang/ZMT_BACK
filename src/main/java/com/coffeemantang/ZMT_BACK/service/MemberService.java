@@ -202,4 +202,45 @@ public class MemberService {
         }
         return true;
     }
+
+    // 이름 변경
+    @Transactional
+    public String updateName(final int memberId, final String chgName){
+        if(memberId < 1){
+            log.warn("MemberService.updateName() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.updateName() : memberId 값이 이상해요");
+        }
+        if(chgName == null || chgName.equals("")){
+            log.warn("MemberService.updatename() : name 값이 이상해요");
+            throw new RuntimeException("MemberService.updatename() : name 값이 이상해요");
+        }
+        final MemberEntity memberEntity = memberRepository.findByMemberId(memberId);
+        memberEntity.setName(chgName);
+        memberRepository.save(memberEntity);
+        String name = memberRepository.findNameByMemberId(memberId);
+        return name;
+    }
+
+    // 본인확인 질문답변 변경
+    @Transactional
+    public MemberEntity updateQA(final int memberId, final String chgQuestion, final String chgAnswer){
+        if(memberId < 1){
+            log.warn("MemberService.updateQA() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.updateQA() : memberId 값이 이상해요");
+        }
+        if(chgQuestion == null || chgQuestion.equals("")){
+            log.warn("MemberService.updateQA() : chgQuestion 값이 이상해요");
+            throw new RuntimeException("MemberService.updateQA() : chgQuestion 값이 이상해요");
+        }
+        if(chgAnswer == null || chgAnswer.equals("")){
+            log.warn("MemberService.updateQA() : chgAnswer 값이 이상해요");
+            throw new RuntimeException("MemberService.updateQA() : chgAnswer 값이 이상해요");
+        }
+        final MemberEntity memberEntity = memberRepository.findByMemberId(memberId);
+        memberEntity.setQuestion(chgQuestion);
+        memberEntity.setAnswer(chgAnswer);
+        memberRepository.save(memberEntity);
+        final MemberEntity chgMemberEntity = memberRepository.findQuestionAnswerByMemberId(memberId);
+        return chgMemberEntity;
+    }
 }

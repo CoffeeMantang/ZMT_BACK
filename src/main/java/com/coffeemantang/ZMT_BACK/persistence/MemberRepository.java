@@ -38,4 +38,13 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
     // 같은 닉네임이 있는지 확인
     @Query(value = "SELECT COUNT(member_id) FROM member WHERE nickname = :nickname", nativeQuery = true)
     int findByNickname(@Param("nickname") String nickname);
+    // 아이디로 이름 가져오기
+    @Query(value = "SELECT name FROM member WHERE member_id = :memberId", nativeQuery = true)
+    String findNameByMemberId(@Param("memberId") int memberId);
+    // 비밀번호 답변 가져오기
+    @Query(value = "SELECT answer FROM member WHERE member_id = :memberId", nativeQuery = true)
+    String findAnswerByMemberId(@Param("memberId") int memberId);
+    // 비밀번호 질문답변 가져오기
+    @Query(value = "SELECT question, answer FROM member WHERE member_id = :memberId", nativeQuery = true)
+    MemberEntity findQuestionAnswerByMemberId(@Param("memberId") int memberId);
 }
