@@ -59,8 +59,8 @@ public class MenuService {
             int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuDTO.getMenuId());
 
             if (memberId != selectMemberIdByMenuId) {
-                log.warn("StoreService.menuSequenceUp() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
-                throw new RuntimeException("StoreService.menuSequenceUp() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+                log.warn("StoreService.menuSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+                throw new RuntimeException("StoreService.menuSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
             }
 
             int menuNumber = menuDTO.getMenuNumber();
@@ -87,37 +87,8 @@ public class MenuService {
             return menuEntity;
 
         } catch (Exception e) {
-            throw new RuntimeException("StoreService.menuSequenceUp() Exception");
+            throw new RuntimeException("StoreService.menuSequenceMove() Exception");
         }
     }
 
-//    // 메뉴 순서 아래로 이동
-//    public MenuEntity menuSequenceDown(MenuDTO menuDTO, int memberId) {
-//
-//        try {
-//            int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuDTO.getMenuId());
-//
-//            if (memberId != selectMemberIdByMenuId) {
-//                log.warn("StoreService.menuSequenceDown() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
-//                throw new RuntimeException("StoreService.menuSequenceDown() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
-//            }
-//
-//            int menuNumber = menuDTO.getMenuNumber();
-//            menuNumber += 1;
-//            // 순서가 올라갈 메뉴
-//            MenuEntity menuEntity = menuRepository.findByStoreIdAndMenuNumber(menuDTO.getStoreId(), menuNumber);
-//            menuEntity.setMenuNumber(menuNumber - 1);
-//            menuRepository.save(menuEntity);
-//
-//            // 순서가 내려갈 메뉴
-//            menuEntity = menuRepository.findByStoreIdAndMenuId(menuDTO.getStoreId(), menuDTO.getMenuId());
-//            menuEntity.setMenuNumber(menuNumber);
-//            menuRepository.save(menuEntity);
-//
-//            return menuEntity;
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException("StoreService.menuSequenceDown() Exception");
-//        }
-//    }
 }
