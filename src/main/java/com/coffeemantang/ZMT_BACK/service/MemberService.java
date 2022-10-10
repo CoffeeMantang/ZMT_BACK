@@ -122,4 +122,58 @@ public class MemberService {
         memberRepository.save(memberEntity);
         return true;
     }
+
+    // 회원정보 가져오기
+    public MemberEntity getMemberEntity(final int memberId){
+        if(memberId < 1){
+            log.warn("MemberService.changePw() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.changePw() : memberId 값이 이상해요");
+        }
+        final MemberEntity memberEntity = memberRepository.findByMemberId(memberId);
+        return memberEntity;
+    }
+
+    // 닉네임 수정하기 - 닉네임 리턴
+    @Transactional
+    public String updateNickname(final int memberId, final String chgNickname){
+        if(memberId < 1){
+            log.warn("MemberService.updateNickname() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.updateNickname() : memberId 값이 이상해요");
+        }
+        if(chgNickname == null || chgNickname.equals("")){
+            log.warn("MemberService.updateNickname() : chgNickname 값이 이상해요");
+            throw new RuntimeException("MemberService.updateNickname() : chgNickname 값이 이상해요");
+        }
+        final MemberEntity memberEntity = memberRepository.findByMemberId(memberId);
+        memberEntity.setNickname(chgNickname);
+        memberRepository.save(memberEntity); // 값 변경
+        final String nickname = memberRepository.findNicknameByMemberId(memberId); //아이디로 현재 닉네임 가져옴
+
+        return nickname;
+    }
+
+    // 전화번호 수정하기 - 같은 전화번호 있으면 실패, 자릿수 체크(10 - 11자리)
+    @Transactional
+    public String updateTel(final int memberId, final String chgTel){
+        if(memberId < 1){
+            log.warn("MemberService.updateTel() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.updateTel() : memberId 값이 이상해요");
+        }
+        if(chgTel == null || chgTel.equals("")){
+            log.warn("MemberService.updateTel() : chgTel 값이 이상해요");
+            throw new RuntimeException("MemberService.updateTel() : chgTel 값이 이상해요");
+        }
+        int count = memberRepository.findByTel(chgTel); // 바꾸려는 전화번호가 이미 있는지 확인
+        if(count > 0){
+            // 이미 같은 전화번호가 있으면
+            log.warn("MemberService.updateTel() : 이미 같은 전화번호가 있어요");
+            throw new RuntimeException("MemberService.updateTel() : 이미 같은 전화번호가 있어요");
+        }
+        // 같은 전화번호가 없으면 전화번호 수정
+        final MemberEntity memberEntity = memberRepository.findByMemberId(memberId);
+        memberEntity.setTel(chgTel);
+        memberRepository.save(memberEntity); // 수정
+        final String tel = memberRepository.findTelByMemberId(memberId); // 현재 저장되어 있는 값 가져오기
+        return tel;
+    }
 }

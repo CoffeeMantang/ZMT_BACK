@@ -26,7 +26,7 @@ public class WebSecurityConfig {
                 .disable().httpBasic() // basic 사용하지 않음
                 .disable().sessionManagement() // session 기반 아님
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests() // 인증안해도 되는 경로 설정
-                .antMatchers("/", "/member/**", "/partners/member/**", "/error").permitAll().anyRequest() // 인증 안해도 되는 경로 설정
+                .antMatchers("/", "/member/**", "/partners/member/**", "/store/**", "/error").permitAll().anyRequest() // 인증 안해도 되는 경로 설정
                 // "/error" 추가해야 403오류와 json 함께 반환
                 .authenticated();
         //filter 등록
