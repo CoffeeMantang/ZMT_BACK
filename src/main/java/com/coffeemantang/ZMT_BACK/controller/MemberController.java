@@ -235,4 +235,41 @@ public class MemberController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
+    // 이름변경
+    @PostMapping("/updatename")
+    public ResponseEntity<?> updateName(@AuthenticationPrincipal String memberId,  @RequestBody MemberDTO memberDTO){
+        try {
+            String name = memberService.updateName(Integer.parseInt(memberId), memberDTO.getName());
+            if (name != null || !name.equals("")) {
+                MemberDTO responseMemberDTO = MemberDTO.builder().name(name).build();
+                return ResponseEntity.ok().body(responseMemberDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 본인확인 질문 답변 변경
+    @PostMapping("/updateqa")
+    public ResponseEntity<?> updateQA(@AuthenticationPrincipal String memberId,  @RequestBody MemberDTO memberDTO){
+        try {
+            MemberEntity memberEntity = memberService.updateQA(Integer.parseInt(memberId), memberDTO.getQuestion(), memberDTO.getAnswer());
+            if (memberEntity != null) {
+                MemberDTO responseMemberDTO = MemberDTO.builder().question(memberEntity.getQuestion())
+                        .answer(memberEntity.getAnswer()).build();
+                return ResponseEntity.ok().body(responseMemberDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
 }
