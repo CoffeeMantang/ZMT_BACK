@@ -1,8 +1,12 @@
 package com.coffeemantang.ZMT_BACK.service;
 
 import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
+import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
+import com.coffeemantang.ZMT_BACK.model.StoreEntity;
+import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
 import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
+import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,22 +21,46 @@ public class MenuService {
 
     private final MenuRepository menuRepository;
 
+    private final StoreRepository storeRepository;
+
     //메뉴 추가
     public MenuEntity addMenu(final MenuEntity menuEntity, int memberId) {
 
         int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuEntity.getMenuId());
 
         if (menuEntity == null || menuEntity.getStoreId() == null) {
-            log.warn("StoreService.addMenu() : menuEntity에 내용이 부족해요");
-            throw new RuntimeException("StoreService.addMenu() : menuEntity에 내용이 부족해요");
+            log.warn("MenuService.addMenu() : menuEntity에 내용이 부족해요");
+            throw new RuntimeException("MenuService.addMenu() : menuEntity에 내용이 부족해요");
         }
         else if (memberId != selectMemberIdByMenuId) {
-            log.warn("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
-            throw new RuntimeException("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            log.warn("MenuService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("MenuService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
         }
 
         return menuRepository.save(menuEntity);
 
+    }
+
+    // 메뉴 삭제 메서드
+    public void deleteMenu(int memberId, int menuId) {
+
+        MenuEntity menuEntity = menuRepository.findByMenuId(menuId);
+        StoreEntity storeEntity = storeRepository.findByStoreIdAndMemberId(menuEntity.getStoreId(), memberId);
+
+        if(!menuEntity.getStoreId().equals(storeEntity.getStoreId())) {
+            log.warn("MenuService.deleteMenu() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("MenuService.deleteMenu() : 로그인된 유저와 가게 소유자가 다릅니다.");
+        }
+
+        int menuNumber = menuEntity.getMenuNumber();
+        List<MenuEntity> menuEntityList = menuRepository.findByGreaterThanMenuNumberAndStoreId(menuNumber, menuEntity.getStoreId());
+
+        for (MenuEntity menuEntity1 : menuEntityList) {
+            menuEntity1.setMenuNumber(menuEntity1.getMenuNumber() - 1);
+            menuRepository.save(menuEntity1);
+        }
+
+        menuRepository.deleteById(menuId);
     }
 
     //메뉴 번호 생성 메서드
@@ -59,8 +87,8 @@ public class MenuService {
             int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuDTO.getMenuId());
 
             if (memberId != selectMemberIdByMenuId) {
-                log.warn("StoreService.menuSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
-                throw new RuntimeException("StoreService.menuSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+                log.warn("MenuService.menuSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+                throw new RuntimeException("MenuService.menuSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
             }
 
             int menuNumber = menuDTO.getMenuNumber();
@@ -87,7 +115,7 @@ public class MenuService {
             return menuEntity;
 
         } catch (Exception e) {
-            throw new RuntimeException("StoreService.menuSequenceMove() Exception");
+            throw new RuntimeException("MenuService.menuSequenceMove() Exception");
         }
     }
 

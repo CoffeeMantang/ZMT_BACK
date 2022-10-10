@@ -50,7 +50,16 @@ public class MenuController {
         }
     }
 
-    //메뉴 순서 위로 이동
+    // 메뉴 삭제
+    @DeleteMapping("/delete")
+    public String deleteMenu(@AuthenticationPrincipal String memberId, int menuId) {
+
+        menuService.deleteMenu(Integer.parseInt(memberId), menuId);
+
+        return "redirect:/";
+    }
+
+    // 메뉴 순서 위로 이동
     @PostMapping("/up")
     public ResponseEntity<?> menuSequenceUp(@AuthenticationPrincipal String memberId, @RequestBody MenuDTO menuDTO) {
 
