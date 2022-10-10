@@ -68,64 +68,14 @@ public class StoreController {
         }
     }
 
-
-    //메뉴 추가
-    @PostMapping("/addmenu")
-    public ResponseEntity<?> addMenu(@AuthenticationPrincipal String memberId, @RequestBody MenuDTO menuDTO) {
-
-        StoreEntity storeEntity = storeRepository.findByMemberId(Integer.parseInt(memberId));
-
-        try {
-            //MenuDTO를 MenuEntity로 변환
-            MenuEntity tempMenuEntity = MenuDTO.toEntity(menuDTO);
-            //storeId 가져와서 추가
-            tempMenuEntity.setStoreId(storeEntity.getStoreId());
-            //MenuNumber 생성
-            tempMenuEntity.setMenuNumber(storeService.createMenuNumber());
-            //MenuEntity 생성
-            MenuEntity menuEntity = storeService.addMenu(tempMenuEntity);
-
-            MenuDTO responseMenuDTO = MenuDTO.builder()
-                    .menuId(menuDTO.getMenuId())
-                    .storeId(menuDTO.getStoreId())
-                    .menuName(menuDTO.getMenuName())
-                    .price(menuDTO.getPrice())
-                    .notice(menuDTO.getNotice())
-                    .category(menuDTO.getCategory())
-                    .tag(menuDTO.getTag())
-                    .menuNumber(menuDTO.getMenuNumber())
-                    .state(menuDTO.getState())
-                    .build();
-
-            return ResponseEntity.ok().body(responseMenuDTO);
-
-        } catch (Exception e) {
-            ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
     //가게 삭제
-    @DeleteMapping("/delete/{storeId}")
-    public String deleteStore(@PathVariable("storeId") String storeId) {
-        storeService.deleteStore(storeId);
+    @DeleteMapping("/delete")
+    public String deleteStore(@AuthenticationPrincipal String memberId, String storeId) {
+        storeService.deleteStore(Integer.parseInt(memberId), storeId);
 
         return "redirect:/";
     }
-    //메뉴 순서 위로 이동
-//    @PostMapping("/menuUp")
 
-    // 옵션 추가
-    @PostMapping("/{menuId}")
-//    public ResponseEntity<?> addOption(@AuthenticationPrincipal String memberId, @PathVariable("menuId") int menuId, @RequestBody OptionDTO optionDTO) {
-    public void addOption(@AuthenticationPrincipal String memberId, @PathVariable("menuId") int menuId, @RequestBody OptionDTO optionDTO) {
-
-        StoreEntity storeEntity = storeRepository.findByMemberId(Integer.parseInt(memberId));
-        MenuEntity menuEntity = menuRepository.findByStoreId(storeEntity.getStoreId());
-        log.info(menuEntity.getMenuId() + " : 메뉴아이디");
-        log.info(menuId + "패스 메뉴 아이디");
-
-    }
 
 
 }
