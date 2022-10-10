@@ -14,6 +14,10 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
     // 회원 아이디로 찾기
 //    List<StoreEntity> findByMemberId(int memberId);
 
+    //회원 아이디로 StoreEntity 가져오기
     StoreEntity findByMemberId(int memberId);
+
+    // 가게 아이디와 회원 아이디로 StoreEntity 가져오기
+    StoreEntity findByStoreIdAndMemberId(String storeId, int memberId);
 }
 
