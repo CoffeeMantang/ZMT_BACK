@@ -31,6 +31,12 @@ public class MemberService {
             log.warn("MemberService.create() : 해당 email이 이미 존재해요");
             throw new RuntimeException("MemberService.create() : 해당 email이 이미 존재해요");
         }
+        // 닉네임 중복 체크
+        boolean check = checkNickname(memberEntity.getNickname());
+        if(!check){
+            log.warn("duplicated nickname");
+            throw new RuntimeException("duplicated nickname");
+        }
 
         return memberRepository.save(memberEntity);
     }
@@ -144,6 +150,13 @@ public class MemberService {
             log.warn("MemberService.updateNickname() : chgNickname 값이 이상해요");
             throw new RuntimeException("MemberService.updateNickname() : chgNickname 값이 이상해요");
         }
+        // 닉네임 중복 체크
+        boolean check = checkNickname(chgNickname);
+        if(!check){
+            log.warn("duplicated nickname");
+            throw new RuntimeException("duplicated nickname");
+        }
+
         final MemberEntity memberEntity = memberRepository.findByMemberId(memberId);
         memberEntity.setNickname(chgNickname);
         memberRepository.save(memberEntity); // 값 변경
@@ -175,5 +188,18 @@ public class MemberService {
         memberRepository.save(memberEntity); // 수정
         final String tel = memberRepository.findTelByMemberId(memberId); // 현재 저장되어 있는 값 가져오기
         return tel;
+    }
+
+    // 닉네임 중복 체크
+    public boolean checkNickname(final String nickname){
+        if(nickname == null || nickname.equals("")){
+            log.warn("MemberService.checkNickname() : nickname 값이 이상해요");
+            throw new RuntimeException("MemberService.checkNickname() : nickname 값이 이상해요");
+        }
+        int count = memberRepository.findByNickname(nickname);
+        if(count > 0){
+            return false;
+        }
+        return true;
     }
 }
