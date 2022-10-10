@@ -21,7 +21,12 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
             "(select menu.store_id from menu WHERE menu_id = :menuId)", nativeQuery = true)
     int selectMemberIdByMenuId(@Param("menuId") int menuId);
 
+    // 가게 아이디로 MenuEntity 가져오기
     MenuEntity findByStoreId(String storeId);
 
+    // 가게 아이디, 메뉴 번호로 MenuEntity 가져오기
+    MenuEntity findByStoreIdAndMenuNumber(String storeId, int menuNumber);
 
+    //가게 아이디, 메뉴 아이디로 MenuEntity 가져오기
+    MenuEntity findByStoreIdAndMenuId(String storeId, int menuId);
 }
