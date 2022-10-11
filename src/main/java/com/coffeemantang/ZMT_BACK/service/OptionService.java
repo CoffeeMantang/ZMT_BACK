@@ -4,8 +4,10 @@ import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.dto.OptionDTO;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.OptionEntity;
+import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
 import com.coffeemantang.ZMT_BACK.persistence.OptionRepository;
+import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,22 +24,48 @@ public class OptionService {
 
     private final MenuRepository menuRepository;
 
+    private final StoreRepository storeRepository;
+
     //옵션 추가
     public OptionEntity addOption(final OptionEntity optionEntity, int memberId) {
 
         int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(optionEntity.getMenuId());
         log.info(selectMemberIdByMenuId + "멤버아이디");
         if (optionEntity == null || optionEntity.getMenuId() == 0) {
-            log.warn("StoreService.addOption() : optionEntity에 내용이 부족해요");
-            throw new RuntimeException("StoreService.addOption() : optionEntity에 내용이 부족해요");
+            log.warn("OptionService.addOption() : optionEntity에 내용이 부족해요");
+            throw new RuntimeException("OptionService.addOption() : optionEntity에 내용이 부족해요");
         }
         else if (memberId != selectMemberIdByMenuId) {
-            log.warn("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
-            throw new RuntimeException("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            log.warn("OptionService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("OptionService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
         }
 
         return optionRepository.save(optionEntity);
 
+    }
+
+    //옵션 삭제 메서드
+    public void deleteOption(int memberId, int optionId) {
+
+        OptionEntity optionEntity = optionRepository.findByOptionId(optionId);
+        log.info(optionId + "findByOptionId 끝");
+        log.info(optionRepository.selectStoreIdByOptionId(optionId) +"스토어아이디 가져옴");
+        StoreEntity storeEntity = storeRepository.findByStoreIdAndMemberId(optionRepository.selectStoreIdByOptionId(optionId), memberId);
+
+        if(!storeEntity.getStoreId().equals(optionRepository.selectStoreIdByOptionId(optionId))) {
+            log.warn("OptionService.deleteOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("OptionService.deleteOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+        }
+
+        int optionNumber = optionEntity.getOptionNumber();
+        List<OptionEntity> optionEntityList = optionRepository.findByGreaterThanOptionNumberAndMenuId(optionNumber, optionEntity.getMenuId());
+
+        for (OptionEntity optionEntity1 : optionEntityList) {
+            optionEntity1.setOptionNumber(optionEntity1.getOptionNumber() - 1);
+            optionRepository.save(optionEntity1);
+        }
+
+        optionRepository.deleteById(optionId);
     }
 
     //옵션 번호 생성 메서드
@@ -57,7 +85,7 @@ public class OptionService {
 
     }
 
-    // 메뉴 순서 이동
+    // 옵션 순서 이동
     public OptionEntity optionSequenceMove(OptionDTO optionDTO, int memberId, int move) {
 
         try {
@@ -65,8 +93,8 @@ public class OptionService {
 
 
             if (memberId != selectMemberIdByMenuId) {
-                log.warn("StoreService.optionSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
-                throw new RuntimeException("StoreService.optionSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+                log.warn("OptionService.optionSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
+                throw new RuntimeException("OptionService.optionSequenceMove() : 로그인된 유저와 가게 소유 유저가 다릅니다.");
             }
 
             int optionNumber = optionDTO.getOptionNumber();
@@ -93,7 +121,7 @@ public class OptionService {
             return optionEntity;
 
         } catch (Exception e) {
-            throw new RuntimeException("StoreService.optionSequenceMove() Exception");
+            throw new RuntimeException("OptionService.optionSequenceMove() Exception");
         }
     }
 }

@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @Slf4j
@@ -48,7 +45,16 @@ public class OptionController {
         }
     }
 
-    //옵션 순서 위로 이동
+    // 옵션 삭제
+    @DeleteMapping("/delete")
+    public String deleteOption(@AuthenticationPrincipal String memberId, int optionId) {
+
+        optionService.deleteOption(Integer.parseInt(memberId), optionId);
+
+        return "redirect:/";
+    }
+
+    // 옵션 순서 위로 이동
     @PostMapping("/up")
     public ResponseEntity<?> optionSequenceUp(@AuthenticationPrincipal String memberId, @RequestBody OptionDTO optionDTO) {
 
