@@ -48,8 +48,6 @@ public class OptionService {
     public void deleteOption(int memberId, int optionId) {
 
         OptionEntity optionEntity = optionRepository.findByOptionId(optionId);
-        log.info(optionId + "findByOptionId 끝");
-        log.info(optionRepository.selectStoreIdByOptionId(optionId) +"스토어아이디 가져옴");
         StoreEntity storeEntity = storeRepository.findByStoreIdAndMemberId(optionRepository.selectStoreIdByOptionId(optionId), memberId);
 
         if(!storeEntity.getStoreId().equals(optionRepository.selectStoreIdByOptionId(optionId))) {
