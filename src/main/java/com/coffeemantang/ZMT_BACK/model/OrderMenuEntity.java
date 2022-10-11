@@ -21,7 +21,7 @@ public class OrderMenuEntity {
     private int ordermenuId;
     @Column(name = "orderlist_id")
     @JoinColumn(name = "orderlist_id")
-    private String orderlistId;
+    private int orderlistId;
     @Column(name = "menu_id")
     @JoinColumn(name = "menu_id")
     private int menuId;
