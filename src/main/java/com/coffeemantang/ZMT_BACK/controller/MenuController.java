@@ -51,12 +51,18 @@ public class MenuController {
     }
 
     // 메뉴 삭제
-    @DeleteMapping("/delete")
-    public String deleteMenu(@AuthenticationPrincipal String memberId, int menuId) {
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteMenu(@AuthenticationPrincipal String memberId, int menuId) {
 
-        menuService.deleteMenu(Integer.parseInt(memberId), menuId);
+        try {
+            MenuEntity menuEntity = menuService.deleteMenu(Integer.parseInt(memberId), menuId);
+            MenuDTO responseMenuDTO = MenuDTO.builder().state(menuEntity.getState()).build();
+            return ResponseEntity.ok().body(responseMenuDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
 
-        return "redirect:/";
     }
 
     // 메뉴 순서 위로 이동

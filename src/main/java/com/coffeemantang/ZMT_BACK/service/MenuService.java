@@ -42,7 +42,7 @@ public class MenuService {
     }
 
     // 메뉴 삭제 메서드
-    public void deleteMenu(int memberId, int menuId) {
+    public MenuEntity deleteMenu(int memberId, int menuId) {
 
         MenuEntity menuEntity = menuRepository.findByMenuId(menuId);
         StoreEntity storeEntity = storeRepository.findByStoreIdAndMemberId(menuEntity.getStoreId(), memberId);
@@ -53,6 +53,7 @@ public class MenuService {
         }
 
         int menuNumber = menuEntity.getMenuNumber();
+        menuEntity.setState(2);
         List<MenuEntity> menuEntityList = menuRepository.findByGreaterThanMenuNumberAndStoreId(menuNumber, menuEntity.getStoreId());
 
         for (MenuEntity menuEntity1 : menuEntityList) {
@@ -60,14 +61,15 @@ public class MenuService {
             menuRepository.save(menuEntity1);
         }
 
-        menuRepository.deleteById(menuId);
+        return menuEntity;
+
     }
 
     //메뉴 번호 생성 메서드
     public int createMenuNumber(String storeId) {
 
         //menuNumber 컬럼만 가져옴
-        List<Integer> list = menuRepository.selectAllMenuNumber(storeId);
+        List<Integer> list = menuRepository.selectAllMenuNumber(storeId, 2);
 
         //리스트가 비어있으면 1, 아니면 최대값 + 1
         if (list.isEmpty()) {
@@ -96,19 +98,19 @@ public class MenuService {
             if(move == 1) { // move == 1 : /up
                 menuNumber -= 1;
                 // 순서가 내려갈 메뉴
-                menuEntity = menuRepository.findByStoreIdAndMenuNumber(menuDTO.getStoreId(), menuNumber);
+                menuEntity = menuRepository.selectMenuStoreIdAndMenuNumberAndState(menuDTO.getStoreId(), menuNumber, 2);
                 menuEntity.setMenuNumber(menuNumber + 1);
                 menuRepository.save(menuEntity);
             } else { // move == 2 : /down
                 menuNumber += 1;
                 // 순서가 올라갈 메뉴
-                menuEntity = menuRepository.findByStoreIdAndMenuNumber(menuDTO.getStoreId(), menuNumber);
+                menuEntity = menuRepository.selectMenuStoreIdAndMenuNumberAndState(menuDTO.getStoreId(), menuNumber, 2);
                 menuEntity.setMenuNumber(menuNumber - 1);
                 menuRepository.save(menuEntity);
             }
 
             // 유저가 선택한 메뉴
-            menuEntity = menuRepository.findByStoreIdAndMenuId(menuDTO.getStoreId(), menuDTO.getMenuId());
+            menuEntity = menuRepository.selectMenuStoreIdAndMenuIdAndState(menuDTO.getStoreId(), menuDTO.getMenuId(), 2);
             menuEntity.setMenuNumber(menuNumber);
             menuRepository.save(menuEntity);
 

@@ -4,6 +4,7 @@ import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,9 +12,9 @@ import java.util.List;
 @Repository
 public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
 
-    //menu_number 컬럼만 가져오는 메서드
-    @Query(value = "SELECT menu_number FROM menu WHERE store_id = :storeId", nativeQuery = true)
-    List<Integer> selectAllMenuNumber(@Param("storeId") String storeId);
+    // state가 2보다 작은 menu_number 컬럼만 가져오는 메서드
+    @Query(value = "SELECT menu_number FROM menu WHERE store_id = :storeId AND state < :state", nativeQuery = true)
+    List<Integer> selectAllMenuNumber(@Param("storeId") String storeId, @Param("state") int state);
 
     //멤버 아이디 가져옴
     @Query(value = "select store.member_id from store " +
@@ -24,11 +25,13 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
     // 가게 아이디로 MenuEntity 가져오기
     MenuEntity findByStoreId(String storeId);
 
-    // 가게 아이디, 메뉴 번호로 MenuEntity 가져오기
-    MenuEntity findByStoreIdAndMenuNumber(String storeId, int menuNumber);
+    // 가게 아이디, 메뉴 번호로 state가 2보다 작은 MenuEntity 가져오기
+    @Query(value = "SELECT * FROM menu WHERE store_id = :storeId AND menu_number = :menuNumber AND state < :state", nativeQuery = true)
+    MenuEntity selectMenuStoreIdAndMenuNumberAndState(@Param("storeId") String storeId, @Param("menuNumber") int menuNumber, @Param("state") int state);
 
     // 가게 아이디, 메뉴 아이디로 MenuEntity 가져오기
-    MenuEntity findByStoreIdAndMenuId(String storeId, int menuId);
+    @Query(value = "SELECT * FROM menu WHERE store_id = :storeId AND menu_id = :menuId AND state < :state", nativeQuery = true)
+    MenuEntity selectMenuStoreIdAndMenuIdAndState(@Param("storeId") String storeId, @Param("menuId") int menuId, @Param("state") int state);
 
     // 메뉴 아이디로 MenuEntity 가져오기
     MenuEntity findByMenuId(int menuId);
