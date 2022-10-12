@@ -5,6 +5,8 @@ import com.coffeemantang.ZMT_BACK.dto.MemberDTO;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.security.TokenProvider;
+import com.coffeemantang.ZMT_BACK.service.EmailService;
+import com.coffeemantang.ZMT_BACK.service.EmailTokenService;
 import com.coffeemantang.ZMT_BACK.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ public class MemberController {
     private TokenProvider tokenProvider;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private EmailTokenService emailTokenService;
 
     // 회원가입
     @PostMapping("/signup")
@@ -52,6 +56,7 @@ public class MemberController {
                     .email(registeredMember.getEmail())
                     .nickname(registeredMember.getNickname())
                     .build();
+            emailTokenService.createEmailToken(registeredMember.getMemberId(), registeredMember.getEmail()); // 이메일 전송
             return ResponseEntity.ok().body(responseMemberDTO);
         } catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
