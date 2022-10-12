@@ -5,7 +5,6 @@ import com.coffeemantang.ZMT_BACK.dto.MemberDTO;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.security.TokenProvider;
-import com.coffeemantang.ZMT_BACK.service.EmailService;
 import com.coffeemantang.ZMT_BACK.service.EmailTokenService;
 import com.coffeemantang.ZMT_BACK.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.xml.ws.Response;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -59,6 +59,18 @@ public class MemberController {
             emailTokenService.createEmailToken(registeredMember.getMemberId(), registeredMember.getEmail()); // 이메일 전송
             return ResponseEntity.ok().body(responseMemberDTO);
         } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+    // 인증 이메일 재전송
+    @PostMapping("/reconfirm")
+    public ResponseEntity<?> viewConfirmEmail(@RequestBody MemberDTO memberDTO){
+        try{
+            emailTokenService.createEmailToken(memberDTO.getMemberId(), memberDTO.getEmail()); // 이메일 전송
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
@@ -273,6 +285,22 @@ public class MemberController {
                 return ResponseEntity.badRequest().body(responseDTO);
             }
         } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+    // 이메일 중복 체크
+    @PostMapping("/checkemail")
+    public ResponseEntity<?> checkEmail(@RequestBody MemberDTO memberDTO){
+        try{
+            if(memberService.checkEmail(memberDTO.getEmail())){
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }else{
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        }catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }

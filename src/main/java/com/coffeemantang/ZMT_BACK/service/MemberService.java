@@ -243,4 +243,16 @@ public class MemberService {
         final MemberEntity chgMemberEntity = memberRepository.findQuestionAnswerByMemberId(memberId);
         return chgMemberEntity;
     }
+
+    // 같은 이메일이 있는지 확인
+    public Boolean checkEmail(final String email){
+        if(email == null || email.equals("")){
+            log.warn("MemberService.checkEmail() : email 값이 이상해요");
+            throw new RuntimeException("MemberService.checkEmail() : email 값이 이상해요");
+        }
+        if(memberRepository.existsByEmail(email)){ //이메일이 이미 있으면 false리턴
+            return false;
+        }
+        return true;
+    }
 }

@@ -5,6 +5,7 @@ import com.coffeemantang.ZMT_BACK.persistence.EmailTokenRepository;
 import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +19,12 @@ import java.util.Optional;
 public class EmailTokenService {
     private final EmailSenderService emailSenderService;
     private final EmailTokenRepository emailTokenRepository;
+    @Value("${spring.mail.username}")
+    private String from; //프로퍼티에서 mail.username 가져옴
 
     // 이메일 인증 토큰 생성
     public String createEmailToken(int memberId, String receiverEmail) throws Exception{
+
         try{
             Assert.notNull(memberId, "memberId는 필수입니다");
             Assert.hasText(receiverEmail, "receiverEmail은 필수입니다.");
@@ -34,7 +38,7 @@ public class EmailTokenService {
             mailMessage.setTo(receiverEmail);
             mailMessage.setSubject("회원가입 이메일 인증");
             mailMessage.setText("http://localhost:8080/member/confirm-email?token="+emailToken.getEmailtokenId());
-            mailMessage.setFrom("nhb0214@naver.com");
+            mailMessage.setFrom(from + "@naver.com"); // 이거 해줘야 오류안남
             emailSenderService.sendEmail(mailMessage);
 
             return emailToken.getEmailtokenId();    // 인증메일 전송 시 토큰 반환
