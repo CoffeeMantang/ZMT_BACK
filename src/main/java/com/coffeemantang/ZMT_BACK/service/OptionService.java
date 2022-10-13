@@ -122,4 +122,12 @@ public class OptionService {
             throw new RuntimeException("OptionService.optionSequenceMove() Exception");
         }
     }
+
+    // 옵션 목록
+    public List<OptionEntity> selectAllOption(int menuId) {
+
+        List<OptionEntity> optionEntityList = optionRepository.findByMenuIdOrderByOptionNumber(menuId);
+
+        return optionEntityList;
+    }
 }

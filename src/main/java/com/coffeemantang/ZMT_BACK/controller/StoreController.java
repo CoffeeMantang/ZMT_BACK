@@ -31,7 +31,7 @@ public class StoreController {
 
     private final MenuRepository menuRepository;
 
-    // 새로운 가게 생성
+    // 가게 생성
     @PostMapping("/create")
     public ResponseEntity<?> createStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO){
         try {
@@ -67,6 +67,10 @@ public class StoreController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    // 가게 수정
+    @PostMapping("/update")
+
 
     //가게 삭제
     @DeleteMapping("/delete")

@@ -32,4 +32,7 @@ public interface OptionRepository extends JpaRepository<OptionEntity, Integer> {
     // 해당 optionNumber 보다 큰 OptionEntity 가져오기
     @Query(value = "SELECT * FROM option WHERE option_number > :optionNumber AND menu_id = :menuId", nativeQuery = true)
     List<OptionEntity> findByGreaterThanOptionNumberAndMenuId(@Param("optionNumber") int optionNumber, @Param("menuId") int menuId);
+
+    // 메뉴 아이디로 optionNumber로 정렬된 OptionEntity 가져오기
+    List<OptionEntity> findByMenuIdOrderByOptionNumber(int menuId);
 }
