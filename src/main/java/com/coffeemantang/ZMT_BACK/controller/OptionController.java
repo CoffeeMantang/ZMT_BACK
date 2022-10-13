@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @Slf4j
 @RestController
@@ -82,6 +84,19 @@ public class OptionController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
 
+    }
+
+    // 옵션 목록
+    @PostMapping("/list")
+    public List<OptionEntity> selectAllOption(int menuId) {
+
+        try {
+            List<OptionEntity> optionEntityList = optionService.selectAllOption(menuId);
+            return optionEntityList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("옵션 리스트를 가져오는 도중 오류 발생");
+        }
     }
 
 }

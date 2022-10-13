@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -93,5 +95,18 @@ public class MenuController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
 
+    }
+
+    // 메뉴 목록
+    @PostMapping("/list")
+    public List<MenuEntity> selectAllMenu(String storeId) {
+
+        try {
+            List<MenuEntity> menuEntityList = menuService.selectAllMenu(storeId);
+            return menuEntityList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("메뉴 리스트를 가져오는 도중 오류 발생");
+        }
     }
 }

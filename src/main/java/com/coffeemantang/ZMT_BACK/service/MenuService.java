@@ -121,4 +121,12 @@ public class MenuService {
         }
     }
 
+    // 메뉴 목록
+    public List<MenuEntity> selectAllMenu(String storeId) {
+
+        List<MenuEntity> menuEntityList = menuRepository.selectMenuOrderByMenuNumber(storeId, 2);
+
+        return menuEntityList;
+    }
+
 }
