@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,18 +17,40 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 // StoreController를 위한 DTO. StoreInfo를 붙여서 보내야 할 경우 두가지를 합친 DTO를 별도로 만듬
 public class StoreDTO {
+
+    @NotBlank
     private String storeId;
+
+    @NotNull
     private int memberId; // 가게주인
+
+    @NotBlank
     private String name; // 가게명
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime joinDay; // 생성일
+
+    @NotNull
     private int category; // 큰 카테고리
+
     private String thumb; // 가게 썸네일 주소
+
+    @NotBlank
     private String address1; // 큰 주소
+
+    @NotBlank
     private String address2; // 상세주소
+
+    @NotNull
     private int state; // 가게상태, 0:영업준비중, 1:영업중, 2:영업중단
+
+    @NotNull
     private double addressX;
+
+    @NotNull
     private double addressY;
+
+    @NotNull
     private int hits; // 가게 조회수.
 
     public StoreDTO(final StoreEntity entity){
@@ -38,6 +62,7 @@ public class StoreDTO {
         this.addressX = entity.getAddressX();
         this.addressY = entity.getAddressY();
         this.category = entity.getCategory();
+        this.state = entity.getState();
     }
 
     // DTO를 Entity로 변환하기 위한 메서드
@@ -50,6 +75,8 @@ public class StoreDTO {
                 .address2(dto.getAddress2())
                 .addressX(dto.getAddressX())
                 .addressY(dto.getAddressY())
-                .category(dto.getCategory()).build();
+                .category(dto.getCategory())
+                .state(dto.getState())
+                .build();
     }
 }

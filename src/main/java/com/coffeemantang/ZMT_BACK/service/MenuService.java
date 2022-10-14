@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,6 +39,28 @@ public class MenuService {
         }
 
         return menuRepository.save(menuEntity);
+
+    }
+
+    // 메뉴 수정
+    public MenuEntity updateMenu(int memberId, @Valid MenuDTO menuDTO) {
+
+        int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuDTO.getMenuId());
+
+        if (memberId != selectMemberIdByMenuId) {
+            log.warn("MenuService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("MenuService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+        }
+
+        MenuEntity menuEntity = menuRepository.findByMenuId(menuDTO.getMenuId());
+        menuEntity.setMenuName(menuDTO.getMenuName());
+        menuEntity.setPrice(menuDTO.getPrice());
+        menuEntity.setNotice(menuDTO.getNotice());
+        menuEntity.setCategory(menuDTO.getCategory());
+        menuEntity.setState(menuDTO.getState());
+        menuRepository.save(menuEntity);
+
+        return menuEntity;
 
     }
 

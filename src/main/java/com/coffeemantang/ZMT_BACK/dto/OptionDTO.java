@@ -6,20 +6,27 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OptionDTO {
 
+    @NotNull
     private int optionId;
 
+    @NotNull
     private int menuId;
 
+    @NotBlank
     private String optionName;
 
     private int optionNumber;
 
+    @NotNull
     private int price;
 
     public OptionDTO(final OptionEntity optionEntity) {

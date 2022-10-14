@@ -1,9 +1,6 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
-import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
-import com.coffeemantang.ZMT_BACK.dto.OptionDTO;
-import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
-import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
+import com.coffeemantang.ZMT_BACK.dto.*;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
@@ -17,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -70,7 +68,32 @@ public class StoreController {
 
     // 가게 수정
     @PostMapping("/update")
+    public ResponseEntity<?> updateStore(@AuthenticationPrincipal String memberId, @Valid @RequestBody StoreDTO storeDTO) {
 
+        try {
+            StoreEntity storeEntity = storeService.updateStore(Integer.parseInt(memberId), storeDTO);
+            if (storeEntity != null) {
+                StoreDTO responseStoreDTO = StoreDTO.builder()
+                        .memberId(storeEntity.getMemberId())
+                        .storeId(storeEntity.getStoreId())
+                        .name(storeEntity.getName())
+                        .category(storeEntity.getCategory())
+                        .address1(storeEntity.getAddress1())
+                        .address2(storeEntity.getAddress2())
+                        .state(storeEntity.getState())
+                        .addressX(storeEntity.getAddressX())
+                        .addressY(storeEntity.getAddressY())
+                        .build();
+                return ResponseEntity.ok().body(responseStoreDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
 
     //가게 삭제
     @DeleteMapping("/delete")
