@@ -15,16 +15,21 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Table(name = "ordermenu")
 public class OrderMenuEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "ordermenu_id")
     private int ordermenuId;
+
     @Column(name = "orderlist_id")
     @JoinColumn(name = "orderlist_id")
     private int orderlistId;
+
     @Column(name = "menu_id")
     @JoinColumn(name = "menu_id")
     private int menuId;
+
     @Column(name = "price")
     private int price;
+
 }
