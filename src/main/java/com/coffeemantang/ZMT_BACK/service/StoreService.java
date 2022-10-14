@@ -1,5 +1,6 @@
 package com.coffeemantang.ZMT_BACK.service;
 
+import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.OptionEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,7 +45,29 @@ public class StoreService {
         return storeRepository.save(storeEntity);
     }
 
-    //가게 삭제
+    // 가게 수정
+    public StoreEntity updateStore(int memberId, @Valid StoreDTO storeDTO) {
+        log.info(storeDTO.getMemberId() + "멤버아이디");
+        if(memberId != storeDTO.getMemberId()) {
+            log.warn("StoreService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("StoreService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+        }
+
+        StoreEntity storeEntity = storeRepository.findByStoreId(storeDTO.getStoreId());
+        storeEntity.setName(storeDTO.getName());
+        storeEntity.setCategory(storeDTO.getCategory());
+        storeEntity.setAddress1(storeDTO.getAddress1());
+        storeEntity.setAddress2(storeDTO.getAddress2());
+        storeEntity.setState(storeDTO.getState());
+        storeEntity.setAddressX(storeDTO.getAddressX());
+        storeEntity.setAddressY(storeDTO.getAddressY());
+        storeRepository.save(storeEntity);
+
+        return storeEntity;
+
+    }
+
+    // 가게 삭제
     public void deleteStore(int memberId, String storeId) {
 
         StoreEntity storeEntity = storeRepository.findByStoreId(storeId);

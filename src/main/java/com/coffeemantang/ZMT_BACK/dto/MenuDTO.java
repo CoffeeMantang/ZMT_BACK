@@ -6,28 +6,37 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuDTO {
 
+    @NotNull
     private int menuId;
 
+    @NotBlank
     private String storeId;
 
+    @NotBlank
     private String menuName;
 
+    @NotNull
     private int price;
 
     private String notice;
 
+    @NotBlank
     private String category;
 
     private String tag;
 
     private int menuNumber;
 
+    @NotNull
     private int state;
 
     public MenuDTO(final MenuEntity menuEntity) {

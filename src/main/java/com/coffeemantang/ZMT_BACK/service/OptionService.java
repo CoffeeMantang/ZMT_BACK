@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,7 +45,26 @@ public class OptionService {
 
     }
 
-    //옵션 삭제 메서드
+    // 옵션 수정
+    public OptionEntity updateOption(int memberId, @Valid OptionDTO optionDTO) {
+
+        int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(optionDTO.getMenuId());
+
+        if (memberId != selectMemberIdByMenuId) {
+            log.warn("OptionService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("OptionService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+        }
+
+        OptionEntity optionEntity = optionRepository.findByOptionId(optionDTO.getOptionId());
+        optionEntity.setOptionName(optionDTO.getOptionName());
+        optionEntity.setPrice(optionDTO.getPrice());
+        optionRepository.save(optionEntity);
+
+        return optionEntity;
+
+    }
+
+    // 옵션 삭제 메서드
     public void deleteOption(int memberId, int optionId) {
 
         OptionEntity optionEntity = optionRepository.findByOptionId(optionId);

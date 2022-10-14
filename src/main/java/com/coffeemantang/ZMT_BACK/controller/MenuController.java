@@ -6,10 +6,12 @@ import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.service.MenuService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
@@ -50,6 +52,34 @@ public class MenuController {
             ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    // 메뉴 수정
+    @PostMapping("update")
+    public ResponseEntity<?> updateMenu(@AuthenticationPrincipal String memberId, @Valid @RequestBody MenuDTO menuDTO) {
+
+        try {
+            MenuEntity menuEntity = menuService.updateMenu(Integer.parseInt(memberId), menuDTO);
+            if (menuEntity != null) {
+                MenuDTO responseMenuDTO = MenuDTO.builder()
+                        .storeId(menuEntity.getStoreId())
+                        .menuId(menuEntity.getMenuId())
+                        .menuName(menuEntity.getMenuName())
+                        .price(menuEntity.getPrice())
+                        .notice(menuEntity.getNotice())
+                        .category(menuEntity.getCategory())
+                        .state(menuEntity.getState())
+                        .build();
+                return ResponseEntity.ok().body(responseMenuDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
     }
 
     // 메뉴 삭제

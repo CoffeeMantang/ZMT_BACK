@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 
@@ -45,6 +46,31 @@ public class OptionController {
             ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    // 옵션 수정
+    @PostMapping("update")
+    public ResponseEntity<?> updateOption(@AuthenticationPrincipal String memberId, @Valid @RequestBody OptionDTO optionDTO) {
+        //빌드 수정 필요
+        try {
+            OptionEntity optionEntity = optionService.updateOption(Integer.parseInt(memberId), optionDTO);
+            if(optionEntity != null) {
+                OptionDTO responseMenuDTO = OptionDTO.builder()
+                        .menuId(optionEntity.getMenuId())
+                        .optionId(optionEntity.getOptionId())
+                        .optionName(optionEntity.getOptionName())
+                        .price(optionEntity.getPrice())
+                        .build();
+                return ResponseEntity.ok().body(responseMenuDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
     }
 
     // 옵션 삭제
