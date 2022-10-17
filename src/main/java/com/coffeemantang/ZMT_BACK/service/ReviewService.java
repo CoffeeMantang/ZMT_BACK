@@ -1,8 +1,11 @@
 package com.coffeemantang.ZMT_BACK.service;
 
+import com.coffeemantang.ZMT_BACK.dto.ReviewCommentDTO;
 import com.coffeemantang.ZMT_BACK.dto.ReviewDTO;
+import com.coffeemantang.ZMT_BACK.model.ReviewCommentEntity;
 import com.coffeemantang.ZMT_BACK.model.ReviewEntity;
 import com.coffeemantang.ZMT_BACK.model.ReviewImgEntity;
+import com.coffeemantang.ZMT_BACK.persistence.ReviewCommentRepository;
 import com.coffeemantang.ZMT_BACK.persistence.ReviewImgRepository;
 import com.coffeemantang.ZMT_BACK.persistence.ReviewRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +15,13 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -25,6 +30,8 @@ public class ReviewService {
     private ReviewRepository reviewRepository;
     @Autowired
     private ReviewImgRepository reviewImgRepository;
+    @Autowired
+    private ReviewCommentRepository reviewCommentRepository;
 
     public void create(final int memberId, final ReviewDTO reviewDTO) throws Exception {
         // 리뷰 엔티티 생성
@@ -110,6 +117,53 @@ public class ReviewService {
                 reviewImgRepository.save(reviewImgEntity);
 
             }
+        }
+    }
+
+    // 들어온 멤버아이디와 리뷰아이디를 비교해서 리뷰 삭제
+    public void delete(final int memberId, final int reviewId) throws Exception{
+        try{
+            if(memberId < 1){
+                log.warn("ReviewService delete() : memberId error");
+                throw new RuntimeException("ReviewService delete() : memberId error");
+            }
+            Optional<ReviewEntity> oReviewEntity = reviewRepository.findByReviewId(reviewId);
+            if(oReviewEntity.isPresent()){
+                // 1. 멤버아이디와 해당 리뷰의 작성자가 일치하는지 확인
+                ReviewEntity reviewEntity = oReviewEntity.get();
+                if(reviewEntity.getMemberId() != memberId){
+                    log.warn("ReviewService delete() : member review match error");
+                    throw new RuntimeException("ReviewService delete() : member review match error");
+                }
+
+                // 2. 데이터가 있을 경우 삭제
+                reviewRepository.delete(reviewEntity);
+            }
+        }catch (Exception e){
+            log.warn("ReviewService delete() : unknown error");
+            throw new RuntimeException("ReviewService delete() : unknown error");
+        }
+    }
+
+    // 리뷰의 답글 추가
+    public void createComment(final int memberId, final ReviewCommentDTO reviewCommentDTO) throws Exception{
+        try{
+            // 아이디 유효성 검사
+            if(memberId < 0){
+                log.warn("ReviewService createComment() : memberId error");
+                throw new RuntimeException("ReviewService createComment() : memberId error");
+            }
+
+            // ReviewCommentEntity 생성 후 저장
+            int reviewId = reviewCommentDTO.getReviewId();
+            ReviewCommentEntity reviewCommentEntity = ReviewCommentEntity.builder()
+                    .reviewId(reviewId)
+                    .memberId(memberId)
+                    .content(reviewCommentDTO.getContent()).build();
+            reviewCommentRepository.save(reviewCommentEntity);
+        }catch (Exception e){
+            log.warn("ReviewService createComment() : Exception");
+            throw new RuntimeException("ReviewService createComment() : Exception");
         }
     }
 }
