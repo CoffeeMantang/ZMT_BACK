@@ -41,5 +41,11 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
     @Query(value = "SELECT * FROM menu WHERE menu_number > :menuNumber AND store_id = :storeId", nativeQuery = true)
     List<MenuEntity> findByGreaterThanMenuNumberAndStoreId(@Param("menuNumber") int menuNumber, @Param("storeId") String storeId);
 
+    // 메뉴 아이디로 가격 가져오기
+    @Query(value = "SELECT price FROM menu WHERE menu_id = :menuId", nativeQuery = true)
+    int selectPriceByMenuId(@Param("menuId") int menuId);
 
+    // 메뉴 아이디로 가게 아이디 가져오기
+    @Query(value = "SELECT store_id FROM menu WHERE menu_id = :menuId", nativeQuery = true)
+    String selectStoreIdByMenuId(@Param("menuId") int menuId);
 }

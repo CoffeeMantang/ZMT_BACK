@@ -55,7 +55,7 @@ public class MenuController {
     }
 
     // 메뉴 수정
-    @PostMapping("update")
+    @PostMapping("/update")
     public ResponseEntity<?> updateMenu(@AuthenticationPrincipal String memberId, @Valid @RequestBody MenuDTO menuDTO) {
 
         try {

@@ -25,10 +25,6 @@ public class StoreController {
 
     private final StoreService storeService;
 
-    private final StoreRepository storeRepository;
-
-    private final MenuRepository menuRepository;
-
     // 가게 생성
     @PostMapping("/create")
     public ResponseEntity<?> createStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO){

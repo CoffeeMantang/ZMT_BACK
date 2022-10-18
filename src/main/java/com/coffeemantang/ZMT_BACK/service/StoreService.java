@@ -28,10 +28,6 @@ public class StoreService {
 
     private final MemberRepository memberRepository;
 
-    private final MenuRepository menuRepository;
-
-    private final OptionRepository optionRepository;
-
     // 가게 생성
     public StoreEntity create(final StoreEntity storeEntity){
         if(storeEntity == null || storeEntity.getMemberId() == 0){
@@ -47,7 +43,7 @@ public class StoreService {
 
     // 가게 수정
     public StoreEntity updateStore(int memberId, @Valid StoreDTO storeDTO) {
-        log.info(storeDTO.getMemberId() + "멤버아이디");
+
         if(memberId != storeDTO.getMemberId()) {
             log.warn("StoreService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
             throw new RuntimeException("StoreService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
