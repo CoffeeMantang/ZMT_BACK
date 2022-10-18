@@ -14,16 +14,16 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class OrderOptionDTO {
 
-    @NotNull
-    private int orderoptionId;
 
-    @NotNull
-    private int ordermenuId;
+    private Long orderoptionId;
+
+
+    private Long ordermenuId;
 
     @NotNull
     private int optionId;
 
-    @NotNull
+
     private int price;
 
     public OrderOptionDTO(final OrderOptionEntity orderOptionEntity) {

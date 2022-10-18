@@ -35,4 +35,8 @@ public interface OptionRepository extends JpaRepository<OptionEntity, Integer> {
 
     // 메뉴 아이디로 optionNumber로 정렬된 OptionEntity 가져오기
     List<OptionEntity> findByMenuIdOrderByOptionNumber(int menuId);
+
+    // 옵션 아이디로 가격 가져오기
+    @Query(value = "SELECT price FROM option WHERE option_id = :optionId", nativeQuery = true)
+    int selectPriceByOptionId(@Param("optionId") int optionId);
 }

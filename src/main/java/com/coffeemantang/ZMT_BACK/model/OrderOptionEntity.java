@@ -18,11 +18,11 @@ public class OrderOptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가
     @Column(name = "orderoption_id")
-    private int orderoptionId;
+    private Long orderoptionId;
 
     @Column(name = "ordermenu_id")
     @JoinColumn(name = "ordermenu_id")
-    private int ordermenuId;
+    private Long ordermenuId;
 
     @Column(name = "option_id")
     @JoinColumn(name = "option_id")

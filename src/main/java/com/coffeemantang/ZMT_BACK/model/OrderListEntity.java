@@ -21,7 +21,7 @@ public class OrderListEntity {
     @GenericGenerator(name = "orderlist_id", strategy = "com.coffeemantang.ZMT_BACK.generator.OrderListGenerator")
     @GeneratedValue(generator = "orderlist_id")
     @Column(name = "orderlist_id")
-    private int orderlistId;
+    private String orderlistId;
 
     @Column(name = "store_id")
     @JoinColumn(name = "store_id")

@@ -5,5 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OrderMenuRepository extends JpaRepository<OrderMenuEntity, Integer> {
+public interface OrderMenuRepository extends JpaRepository<OrderMenuEntity, Long> {
+
+    // 오더리스트아이디로 메뉴 삭제하기
+    public void deleteAllByOrderlistId(String orderListId);
 }
