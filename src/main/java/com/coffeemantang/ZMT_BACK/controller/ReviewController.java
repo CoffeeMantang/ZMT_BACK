@@ -7,11 +7,14 @@ import com.coffeemantang.ZMT_BACK.persistence.ReviewCommentRepository;
 import com.coffeemantang.ZMT_BACK.service.ReviewService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.ws.Response;
+import java.awt.print.Pageable;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -24,10 +27,15 @@ public class ReviewController {
     @PostMapping("/create")
     public ResponseEntity<?> createReview(@AuthenticationPrincipal String memberId, @RequestBody ReviewDTO reviewDTO) throws Exception{
         try{
-            reviewService.create(Integer.parseInt(memberId),reviewDTO);
+            // 리뷰 쓰기가 가능할 경우에만 create
+            if (reviewService.checkOrder(Integer.parseInt(memberId), reviewDTO.getStoreId())){
+                reviewService.create(Integer.parseInt(memberId),reviewDTO);
 
-            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
-            return ResponseEntity.ok().body(responseDTO);
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }
+            ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+            return ResponseEntity.badRequest().body(responseDTO);
         }catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
@@ -61,6 +69,39 @@ public class ReviewController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
+    // 가게 리뷰 보기(페이징) -> 추후 로그인 없이 볼 수 있는 path로 이동시킴
+    @GetMapping("/store")
+    public ResponseEntity<?> storeReview(@RequestParam(value = "storeId") String storeId, @PageableDefault(size = 10) Pageable pageable) throws Exception{
+        try{
+            List<ReviewDTO> listReview = reviewService.getStoreReviewList(storeId, pageable);
+            if(listReview.isEmpty()){ // 리뷰가 없을때
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }else{
+                return ResponseEntity.ok().body(listReview);
+            }
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
     
-    // 리뷰 추천(계정 당 하나)... 테이블 만들어야 할듯
+    // 리뷰 추천(계정 당 하나)...
+    @PostMapping("/recommend")
+    public ResponseEntity<?> recommend(@AuthenticationPrincipal String memberId, @RequestParam(value = "reviewId") int reviewId) throws Exception{
+        try{
+            if(reviewService.recommend(Integer.parseInt(memberId), reviewId)){
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }
+            ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
 }

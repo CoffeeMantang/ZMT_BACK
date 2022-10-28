@@ -1,5 +1,6 @@
 package com.coffeemantang.ZMT_BACK.dto;
 
+import com.coffeemantang.ZMT_BACK.model.ReviewEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,4 +27,17 @@ public class ReviewDTO {
     private String content; // 리뷰내용
     private int recommend; // 추천갯수
     private List<MultipartFile> files; // 넘어올 파일
+    private List<String> reviewFiles; // 파일의 경로 + 파일명
+
+    // ReviewEntity를 ReviewDTO로
+    public ReviewDTO (final ReviewEntity reviewEntity){
+        this.reviewId = reviewEntity.getReviewId();
+        this.memberId = reviewEntity.getMemberId();
+        this.storeId = reviewEntity.getStoreId();
+        this.date = reviewEntity.getDate();
+        this.score = reviewEntity.getScore();
+        this.title = reviewEntity.getTitle();
+        this.content = reviewEntity.getContent();
+        this.recommend = reviewEntity.getRecommend();
+    }
 }
