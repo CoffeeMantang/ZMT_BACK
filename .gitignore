@@ -18,7 +18,9 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
+apllication.properties
 application-asdf.properties
+application-dk.properties
 
 .idea
 *.iws
