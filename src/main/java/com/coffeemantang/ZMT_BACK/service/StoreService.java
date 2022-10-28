@@ -75,4 +75,12 @@ public class StoreService {
 
         storeRepository.deleteById(storeId);
     }
+
+    // 가게 목록
+    public List<StoreEntity> selectAllStore() {
+
+        List<StoreEntity> storeEntityList = storeRepository.findAll();
+
+        return storeEntityList;
+    }
 }

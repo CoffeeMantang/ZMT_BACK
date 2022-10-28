@@ -27,7 +27,8 @@ public class OrderMenuDTO {
 
     private List<OrderOptionDTO> orderOptionDTOS;
 
-    private int number;
+    @NotNull
+    private int quantity;
 
     public OrderMenuDTO(final OrderMenuEntity orderMenuEntity) {
 
@@ -35,6 +36,7 @@ public class OrderMenuDTO {
         this.orderlistId = orderMenuEntity.getOrderlistId();
         this.menuId = orderMenuEntity.getMenuId();
         this.price = orderMenuEntity.getPrice();
+        this.quantity = orderMenuEntity.getQuantity();
 
     }
 
@@ -45,6 +47,7 @@ public class OrderMenuDTO {
                 .orderlistId(orderMenuDTO.getOrderlistId())
                 .menuId(orderMenuDTO.getMenuId())
                 .price(orderMenuDTO.getPrice())
+                .quantity(orderMenuDTO.getQuantity())
                 .build();
 
     }

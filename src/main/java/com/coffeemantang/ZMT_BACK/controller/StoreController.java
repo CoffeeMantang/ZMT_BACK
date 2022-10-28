@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -99,6 +100,18 @@ public class StoreController {
         return "redirect:/";
     }
 
+    // 가게 목록
+    @PostMapping("/list")
+    public List<StoreEntity> selectAllStore() {
 
+        try {
+            List<StoreEntity> storeEntityList = storeService.selectAllStore();
+            return storeEntityList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("가게 리스트를 가져오는 도중 오류 발생");
+        }
+        
+    }
 
 }

@@ -42,11 +42,7 @@ public class OrderListService {
             for (OrderOptionDTO orderOptionDTO : orderMenuDTO.getOrderOptionDTOS()) {
                 price += optionRepository.selectPriceByOptionId(orderOptionDTO.getOptionId());
             }
-            orderListEntity.setPrice(price);
-            // 수량이 1보다 많으면 price * 수량
-            if (orderMenuDTO.getNumber() > 1) {
-                orderListEntity.setPrice(price * orderMenuDTO.getNumber());
-            }
+            orderListEntity.setPrice(price * orderMenuDTO.getQuantity());
             orderListEntity.setState(0);
             orderListRepository.save(orderListEntity);
         } else {
@@ -66,32 +62,26 @@ public class OrderListService {
             for (OrderOptionDTO orderOptionDTO : orderMenuDTO.getOrderOptionDTOS()) {
                 price += optionRepository.selectPriceByOptionId(orderOptionDTO.getOptionId());
             }
-            if (orderMenuDTO.getNumber() > 1) {
-                price *= orderMenuDTO.getNumber();
-                orderListEntity.setPrice(orderListEntity.getPrice() + price);
-            } else {
-                orderListEntity.setPrice(orderListEntity.getPrice() + price);
-            }
+            price *= orderMenuDTO.getQuantity();
+            orderListEntity.setPrice(orderListEntity.getPrice() + price);
             orderListRepository.save(orderListEntity);
         }
 
         // 오더메뉴 추가
         String orderListId = orderListEntity.getOrderlistId();
-        for (int i = 0; i < orderMenuDTO.getNumber(); i++) {
-            OrderMenuEntity orderMenuEntity = new OrderMenuEntity();
-            orderMenuEntity.setOrderlistId(orderListId);
-            orderMenuEntity.setMenuId(orderMenuDTO.getMenuId());
-            orderMenuRepository.save(orderMenuEntity);
+        OrderMenuEntity orderMenuEntity = new OrderMenuEntity();
+        orderMenuEntity.setOrderlistId(orderListId);
+        orderMenuEntity.setMenuId(orderMenuDTO.getMenuId());
+        orderMenuEntity.setQuantity(orderMenuDTO.getQuantity());
+        orderMenuRepository.save(orderMenuEntity);
 
-            // 오데 옵션 추가
-            Long orderMenuId = orderMenuRepository.save(orderMenuEntity).getOrdermenuId();
-            for (OrderOptionDTO orderOptionDTO : orderMenuDTO.getOrderOptionDTOS()) {
-                OrderOptionEntity orderOptionEntity = new OrderOptionEntity();
-                orderOptionEntity.setOrderoptionId(null);
-                orderOptionEntity.setOrdermenuId(orderMenuId);
-                orderOptionEntity.setOptionId(orderOptionDTO.getOptionId());
-                orderOptionRepository.save(orderOptionEntity);
-            }
+        // 오더 옵션 추가
+        Long orderMenuId = orderMenuRepository.save(orderMenuEntity).getOrdermenuId();
+        for (OrderOptionDTO orderOptionDTO : orderMenuDTO.getOrderOptionDTOS()) {
+            OrderOptionEntity orderOptionEntity = new OrderOptionEntity();
+            orderOptionEntity.setOrdermenuId(orderMenuId);
+            orderOptionEntity.setOptionId(orderOptionDTO.getOptionId());
+            orderOptionRepository.save(orderOptionEntity);
         }
 //        OrderListDTO responseOrderListDTO = OrderListDTO.builder()
 //                .orderlistId(orderListEntity.getOrderlistId())
@@ -105,6 +95,21 @@ public class OrderListService {
 
     }
 
-    // 장바구니 삭제
+    // 장바구니 메뉴 삭제
+    public void deleteMenuFromBasket(int memberId, OrderMenuDTO orderMenuDTO) {
 
+        OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderMenuDTO.getOrderlistId());
+
+        if (memberId != orderListEntity.getMemberId()) {
+            log.warn("OrderListService.deleteMenuFromBasket() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
+            throw new RuntimeException("OrderListService.deleteMenuFromBasket() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
+        }
+
+        orderMenuRepository.deleteAllByOrderlistIdAndOrdermenuId(orderMenuDTO.getOrderlistId(), orderMenuDTO.getOrdermenuId());
+    }
+
+//    public int getPrice(OrderMenuDTO orderMenuDTO) {
+
+//        orderMenuDTO.getPrice()
+//    }
 }
