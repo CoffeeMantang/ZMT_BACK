@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface OrderListRepository extends JpaRepository<OrderListEntity, String> {
+    // 가게 아이디와 회원 아이디로 해당 기간 내의 주문완료 갯수 가져오기
+    @Query(value = "SELECT count(store_id) FROM store WHERE " +
+            "store_id = :storeId AND member_id = :memberId, AND order_date < :date AND state = 2", nativeQuery = true)
+    int countByStoreIdAndMemberId(@Param("storeId") String storeId, @Param("memberId") int memberId, @Param("date")LocalDateTime date);
 
     // 맴버아이디와 state 값에 맞는 오더리스트 가져오기
     OrderListEntity findByMemberIdAndState(int memberId, int state);
