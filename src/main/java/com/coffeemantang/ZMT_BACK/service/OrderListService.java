@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -104,12 +105,24 @@ public class OrderListService {
             log.warn("OrderListService.deleteMenuFromBasket() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
             throw new RuntimeException("OrderListService.deleteMenuFromBasket() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
         }
-
+        int price = getPrice(orderMenuDTO);
+        orderListEntity.setPrice(orderListEntity.getPrice() - price);
+        orderListRepository.save(orderListEntity);
         orderMenuRepository.deleteAllByOrderlistIdAndOrdermenuId(orderMenuDTO.getOrderlistId(), orderMenuDTO.getOrdermenuId());
+
     }
 
-//    public int getPrice(OrderMenuDTO orderMenuDTO) {
+    // 가격 구하기
+    public int getPrice(OrderMenuDTO orderMenuDTO) {
 
-//        orderMenuDTO.getPrice()
-//    }
+        int price = menuRepository.selectPriceByMenuId(orderMenuDTO.getMenuId());
+        List<Integer> optionIdList = orderOptionRepository.selectAllOptionIdByOrdermenuId(orderMenuDTO.getOrdermenuId());
+        for (Integer optionIdLists : optionIdList) {
+            price += optionRepository.selectPriceByOptionId(optionIdLists);
+        }
+        price *= orderMenuDTO.getQuantity();
+
+        return price;
+
+    }
 }
