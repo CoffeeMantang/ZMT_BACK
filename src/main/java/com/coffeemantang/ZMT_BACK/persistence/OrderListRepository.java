@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 
 @Repository
-public interface OrderListRepository extends JpaRepository<OrderListEntity, Integer> {
+public interface OrderListRepository extends JpaRepository<OrderListEntity, String> {
     // 가게 아이디와 회원 아이디로 해당 기간 내의 주문완료 갯수 가져오기
     @Query(value = "SELECT count(store_id) FROM store WHERE " +
             "store_id = :storeId AND member_id = :memberId, AND order_date < :date AND state = 2", nativeQuery = true)
