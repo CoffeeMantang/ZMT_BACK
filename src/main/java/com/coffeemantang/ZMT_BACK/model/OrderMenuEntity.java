@@ -32,4 +32,7 @@ public class OrderMenuEntity {
     @Column(name = "price")
     private int price;
 
+    @Column(name = "quantity")
+    private int quantity;
+
 }
