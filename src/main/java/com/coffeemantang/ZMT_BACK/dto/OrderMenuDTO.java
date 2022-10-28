@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @Builder
@@ -14,17 +15,19 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class OrderMenuDTO {
 
-    @NotNull
-    private int ordermenuId;
+    private Long ordermenuId;
 
-    @NotNull
-    private int orderlistId;
+
+    private String orderlistId;
 
     @NotNull
     private int menuId;
 
-    @NotNull
     private int price;
+
+    private List<OrderOptionDTO> orderOptionDTOS;
+
+    private int number;
 
     public OrderMenuDTO(final OrderMenuEntity orderMenuEntity) {
 
