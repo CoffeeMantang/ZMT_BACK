@@ -1,5 +1,7 @@
 package com.coffeemantang.ZMT_BACK.service;
 
+import com.coffeemantang.ZMT_BACK.dto.OptionDTO;
+import com.coffeemantang.ZMT_BACK.dto.OrderListDTO;
 import com.coffeemantang.ZMT_BACK.dto.OrderMenuDTO;
 import com.coffeemantang.ZMT_BACK.dto.OrderOptionDTO;
 import com.coffeemantang.ZMT_BACK.model.OrderListEntity;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -112,6 +115,18 @@ public class OrderListService {
 
     }
 
+    // 장바구니 메뉴 전체 삭제
+    public void deleteAllMenuFromBasket(int memberId, OrderListDTO orderListDTO) {
+
+        if (memberId != orderListDTO.getMemberId()) {
+            log.warn("OrderListService.deleteAllMenu() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
+            throw new RuntimeException("OrderListService.deleteAllMenu() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
+        }
+
+        orderListRepository.deleteById(orderListDTO.getOrderlistId());
+
+    }
+
     // 가격 구하기
     public int getPrice(OrderMenuDTO orderMenuDTO) {
 
@@ -125,4 +140,34 @@ public class OrderListService {
         return price;
 
     }
+
+    // 오더리스트 메뉴 목록
+    public List<OrderMenuDTO> viewMenuList(int memberId, OrderListDTO orderListDTO) {
+
+        if (memberId != orderListDTO.getMemberId()) {
+            log.warn("OrderListService.viewMenuList() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
+            throw new RuntimeException("OrderListService.viewMenuList() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
+        }
+
+        // 오더메뉴 리스트 가져오기
+        List<OrderMenuEntity> orderMenuEntities = orderMenuRepository.findAllByOrderlistId(orderListDTO.getOrderlistId());
+
+        // DTO 리스트로 변환
+        List<OrderMenuDTO> orderMenuDTOList = orderMenuEntities.stream()
+                .map(OrderMenuDTO::new)
+                .collect(Collectors.toList());
+
+        // 오더옵션 리스트 가져와서 DTO로 변환 후 오더메뉴DTO에 저장
+        for (OrderMenuDTO orderMenuDTO : orderMenuDTOList) {
+            List<OrderOptionEntity> orderOptionEntities = orderOptionRepository.findAllByOrdermenuId(orderMenuDTO.getOrdermenuId());
+            List<OrderOptionDTO> orderOptionDTOS = orderOptionEntities.stream()
+                    .map(OrderOptionDTO::new)
+                    .collect(Collectors.toList());
+            orderMenuDTO.setOrderOptionDTOS(orderOptionDTOS);
+        }
+
+        return orderMenuDTOList;
+
+    }
+
 }

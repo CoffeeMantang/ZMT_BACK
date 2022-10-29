@@ -8,17 +8,22 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Data
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "bookmark")
-public class BookmarkEntitiy {
+@Table(name = "charge")
+public class ChargeEntity {
+
     @Id
-    @JoinColumn(name = "member_id")
-    @Column(name = "member_id")
-    private int memberId;
-    @JoinColumn(name = "store_id")
     @Column(name = "store_id")
-    private int storeId;
+    @JoinColumn(name = "store_id")
+    private String storeId;
+
+    @Column(name = "dong")
+    private String dong;
+
+    @Column(name = "charge")
+    private int charge;
+
 }
