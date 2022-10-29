@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.ws.Response;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,7 @@ public class OrderListController {
     // 장바구니 메뉴 삭제
     @DeleteMapping("/delete")
     public String deleteMenuFromBasket(@AuthenticationPrincipal String memberId, @RequestBody OrderMenuDTO orderMenuDTO) {
+
         orderListService.deleteMenuFromBasket(Integer.parseInt(memberId), orderMenuDTO);
 
         return "redirect:/";
@@ -68,16 +70,55 @@ public class OrderListController {
 
     // 오더리스트 메뉴 보기
     @PostMapping("/list")
-    public List<OrderMenuDTO> viewMenuList(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+    public ResponseEntity<?> viewMenuList(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
 
         try {
-            List<OrderMenuDTO> orderMenuDTOList = orderListService.viewMenuList(Integer.parseInt(memberId), orderListDTO);
+            OrderListDTO newOrderListDTO = orderListService.viewMenuList(Integer.parseInt(memberId), orderListDTO);
+            if(newOrderListDTO != null){
+                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
+                        .menuDTOList(newOrderListDTO.getMenuDTOList())
+                        .build();
+                return ResponseEntity.ok().body(responseOrderListDTO);
 
-            return orderMenuDTOList;
+            }else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("오더리스트 메뉴 리스트를 가져오는 도중 오류 발생");
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
         }
-
+//        catch (Exception e) {
+//            e.printStackTrace();
+//            throw new RuntimeException("오더리스트 메뉴 리스트를 가져오는 도중 오류 발생");
+//        }
     }
+
+    // 결제 완료 후. 주문 대기 상태
+    @PostMapping("/waiting")
+    public ResponseEntity<?> waitingOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+
+        try {
+            OrderListEntity orderListEntity = orderListService.waitingOrder(Integer.parseInt(memberId), orderListDTO);
+            if (orderListEntity != null) {
+                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
+                        .orderlistId(orderListEntity.getOrderlistId())
+                        .memberId(orderListEntity.getMemberId())
+                        .storeId(orderListEntity.getStoreId())
+                        .orderDate(orderListEntity.getOrderDate())
+                        .spoon(orderListEntity.getSpoon())
+                        .userMessage(orderListEntity.getUserMessage())
+                        .price(orderListEntity.getPrice())
+                        .build();
+                return ResponseEntity.ok().body(responseOrderListDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
 }

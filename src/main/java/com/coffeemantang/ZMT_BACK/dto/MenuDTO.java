@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @Builder
@@ -38,6 +39,8 @@ public class MenuDTO {
 
     @NotNull
     private int state;
+
+    private List<OptionDTO> optionDTOList;
 
     public MenuDTO(final MenuEntity menuEntity) {
 
