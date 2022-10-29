@@ -55,4 +55,7 @@ public class OrderListEntity {
     @Column(name = "weather")
     private int weather; // 취소사유
 
+    @Column(name = "charge")
+    private int charge;
+
 }

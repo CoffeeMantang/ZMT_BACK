@@ -48,6 +48,10 @@ public class OrderListDTO {
 
     private List<OrderMenuDTO> orderMenuDTOList;
 
+    private List<MenuDTO> menuDTOList;
+
+    private int charge;
+
 
     public OrderListDTO(final OrderListEntity orderListEntity) {
 
