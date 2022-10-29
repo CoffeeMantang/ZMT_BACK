@@ -11,6 +11,10 @@ import java.util.List;
 @Repository
 public interface OrderOptionRepository extends JpaRepository<OrderOptionEntity, Long> {
 
+    // orderMenuId에 맞는 OptionId 리스트 가져오기
     @Query(value = "SELECT option_id FROM orderoption WHERE ordermenu_id = :ordermenuId", nativeQuery = true)
     public List<Integer> selectAllOptionIdByOrdermenuId(@Param("ordermenuId") Long ordermenuId);
+
+    // orderMenuId로 OrderOptionEntity 리스트 가져오기
+    public List<OrderOptionEntity> findAllByOrdermenuId(Long orderMenuId);
 }
