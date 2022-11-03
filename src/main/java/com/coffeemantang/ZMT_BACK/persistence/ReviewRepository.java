@@ -22,4 +22,11 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Integer> {
 
     // 가게아이디로 리뷰리스트 가져오기
     Page<ReviewEntity> findByStoreIdOrderByDateDesc(String storeId, Pageable pageable);
+
+    // 멤버아이디로 리뷰리스트 가져오기
+    Page<ReviewEntity> findByMemberIdOrderByDateDesc(int memberId, Pageable pageable);
+
+    // 멤버아이디와 리뷰아이디로 검색
+    Long countByMemberIdAndReviewId(int memberId, int reviewId);
+
 }

@@ -104,4 +104,56 @@ public class ReviewController {
         }
     }
 
+    // 리뷰 작성 가능 여부 가져오기
+    @PostMapping("/checkreview")
+    public ResponseEntity<?> recommend(@AuthenticationPrincipal String memberId, @RequestParam(value = "storeId") String storeId) throws Exception{
+        try{
+            if(reviewService.checkReview(Integer.parseInt(memberId), storeId)){
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }else{
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 내 리뷰 목록 가져오기(페이징)
+    @PostMapping("myreview")
+    public ResponseEntity<?> myReview(@AuthenticationPrincipal String memberId, @PageableDefault(size = 10) Pageable pageable) throws Exception{
+        try{
+            List<ReviewDTO> listReview = reviewService.getMyReview(Integer.parseInt(memberId), pageable);
+            if(listReview.isEmpty()){ // 리뷰가 없을때
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }else{
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 리뷰 삭제
+    @PostMapping("delete")
+    public ResponseEntity<?> deleteReview(@AuthenticationPrincipal String memberId, @RequestParam(value = "reviewId") int reviewId) throws Exception{
+        try{
+            if(reviewService.deleteReview(Integer.parseInt(memberId), reviewId)){
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }else{
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
 }
