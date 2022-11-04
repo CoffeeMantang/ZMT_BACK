@@ -52,6 +52,8 @@ public class OrderListDTO {
 
     private int charge;
 
+    private int memberrocationId;
+
 
     public OrderListDTO(final OrderListEntity orderListEntity) {
 
@@ -65,6 +67,7 @@ public class OrderListDTO {
         this.userMessage = orderListEntity.getUserMessage();
         this.spoon = orderListEntity.getSpoon();
         this.cancelMessage = orderListEntity.getCancelMessage();
+        this.memberrocationId = orderListEntity.getMemberrocationId();
 
     }
 
@@ -81,6 +84,7 @@ public class OrderListDTO {
                 .userMessage(orderListDTO.getUserMessage())
                 .spoon(orderListDTO.getSpoon())
                 .cancelMessage(orderListDTO.getCancelMessage())
+                .memberrocationId(orderListDTO.getMemberrocationId())
                 .build();
 
     }

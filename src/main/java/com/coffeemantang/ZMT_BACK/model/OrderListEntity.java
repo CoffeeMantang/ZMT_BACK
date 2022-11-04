@@ -58,4 +58,7 @@ public class OrderListEntity {
     @Column(name = "charge")
     private int charge;
 
+    @Column(name = "memberrocation_id")
+    @JoinColumn(name = "memberrocation_id")
+    private int memberrocationId;
 }

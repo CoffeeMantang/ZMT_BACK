@@ -5,20 +5,14 @@ import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.lang.String;
 
 @Slf4j
 @Service
@@ -243,6 +237,8 @@ public class OrderListService {
         orderListEntity.setUserMessage(orderListDTO.getUserMessage());
         orderListEntity.setSpoon(orderListDTO.getSpoon());
         orderListEntity.setOrderDate(LocalDateTime.now());
+        // 유저 대표 주소 가져올 예정
+        orderListEntity.setMemberrocationId(orderListDTO.getMemberrocationId());
         orderListRepository.save(orderListEntity);
 
         return orderListEntity;
