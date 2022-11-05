@@ -79,7 +79,6 @@ public class OrderListController {
     @PostMapping("/waiting")
     public ResponseEntity<?> waitingOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
 
-        log.info(orderListDTO.getOrderlistId() + "오더리스트아이디");
         try {
             OrderListEntity orderListEntity = orderListService.waitingOrder(Integer.parseInt(memberId), orderListDTO);
             if (orderListEntity != null) {
@@ -105,5 +104,78 @@ public class OrderListController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
+    // 주문 수락
+    @PostMapping("/accept")
+    public ResponseEntity<?> acceptOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+
+        try {
+            OrderListEntity orderListEntity = orderListService.acceptOrder(Integer.parseInt(memberId), orderListDTO);
+            if (orderListEntity != null) {
+                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
+                        .orderlistId(orderListEntity.getOrderlistId())
+                        .memberId(orderListEntity.getMemberId())
+                        .storeId(orderListEntity.getStoreId())
+                        .orderDate(orderListEntity.getOrderDate())
+                        .spoon(orderListEntity.getSpoon())
+                        .userMessage(orderListEntity.getUserMessage())
+                        .price(orderListEntity.getPrice())
+                        .charge(orderListEntity.getCharge())
+                        .time(orderListEntity.getTime())
+                        .memberrocationId(orderListEntity.getMemberrocationId())
+                        .orderMenuDTOList(orderListDTO.getOrderMenuDTOList())
+                        .build();
+                return ResponseEntity.ok().body(responseOrderListDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 주문 취소
+    @PostMapping("/cancel")
+    public ResponseEntity<?> cancelOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+
+        try {
+            OrderListEntity orderListEntity = orderListService.cancelOrder(Integer.parseInt(memberId), orderListDTO);
+            if (orderListEntity != null) {
+                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
+                        .orderlistId(orderListEntity.getOrderlistId())
+                        .memberId(orderListEntity.getMemberId())
+                        .storeId(orderListEntity.getStoreId())
+                        .orderDate(orderListEntity.getOrderDate())
+                        .spoon(orderListEntity.getSpoon())
+                        .userMessage(orderListEntity.getUserMessage())
+                        .price(orderListEntity.getPrice())
+                        .charge(orderListEntity.getCharge())
+                        .time(orderListEntity.getTime())
+                        .cancelMessage(orderListEntity.getCancelMessage())
+                        .memberrocationId(orderListEntity.getMemberrocationId())
+                        .orderMenuDTOList(orderListDTO.getOrderMenuDTOList())
+                        .build();
+                return ResponseEntity.ok().body(responseOrderListDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 주문 삭제
+    @PostMapping("/deleteorder")
+    public String deleteOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+
+        orderListService.deleteOrder(Integer.parseInt(memberId), orderListDTO);
+
+        return "redirect:/";
+    }
+
 
 }
