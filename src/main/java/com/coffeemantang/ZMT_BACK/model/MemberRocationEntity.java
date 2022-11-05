@@ -39,7 +39,7 @@ public class MemberRocationEntity {
     @Column(name = "address_y")
     private double addressY; // 경도
 
-    @Column(name = "select")
-    private int select;
+    @Column(name = "state")
+    private int state;
 
 }
