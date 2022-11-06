@@ -26,5 +26,6 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
             "GROUP BY store_id", nativeQuery = true)
     StoreEntity findByMenuId(int menuId);
 
+
 }
 

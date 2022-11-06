@@ -3,10 +3,7 @@ package com.coffeemantang.ZMT_BACK.service;
 import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.dto.RecommendDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
-import com.coffeemantang.ZMT_BACK.model.MemberEntity;
-import com.coffeemantang.ZMT_BACK.model.MemberRocationEntity;
-import com.coffeemantang.ZMT_BACK.model.MenuEntity;
-import com.coffeemantang.ZMT_BACK.model.StoreEntity;
+import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +28,7 @@ public class RecommendService {
     @Autowired
     private StoreRepository storeRepository;
     @Autowired
-    private Menu
+    private MenuImgRepository menuImgRepository;
 
     private CosineSimilarity cosineSimilarity = new CosineSimilarity();
 
@@ -135,16 +132,28 @@ public class RecommendService {
                 }
             }
             // 10. 추출한 menuId리스트로 recommendDTO 생성
+            List<RecommendDTO> resultList = new ArrayList<>();
             for (Integer menuId : similarList){
                MenuEntity menuEntity = menuRepository.findByMenuId(menuId);
                StoreEntity storeEntity = storeRepository.findByMenuId(menuId);
-
+               MenuImgEntity menuImgEntity = menuImgRepository.findByMenuId(menuId);
+               RecommendDTO recommendDTO = RecommendDTO.builder()
+                       .menuName(menuEntity.getMenuName())
+                       .menuId(menuId)
+                       .menuPic(menuImgEntity.getPath())
+                       .storeId(storeEntity.getStoreId())
+                       .state(0)
+                       .storeName(storeEntity.getName()).build();
+               if(menuEntity.getState() != 0 || storeEntity.getState() != 1){ // 현재 주문 불가능한 메뉴 체크
+                   recommendDTO.setState(1);
+               }
+               resultList.add(recommendDTO);
             }
-
-            return null;
+            return resultList;
         }
         catch(Exception e){
-            return null;
+            log.warn("RecommendService.userRecommend() : Exception");
+            throw new RuntimeException("RecommendService.userRecommend() : Exception");
         }
     }
 
