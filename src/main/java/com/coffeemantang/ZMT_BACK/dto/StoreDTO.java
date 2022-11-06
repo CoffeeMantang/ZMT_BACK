@@ -53,6 +53,8 @@ public class StoreDTO {
     @NotNull
     private int hits; // 가게 조회수.
 
+    private int bookmark;
+
     public StoreDTO(final StoreEntity entity){
         this.storeId = entity.getStoreId();
         this.memberId = entity.getMemberId();
