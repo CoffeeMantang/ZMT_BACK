@@ -4,16 +4,14 @@ import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.OptionEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
-import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
-import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
-import com.coffeemantang.ZMT_BACK.persistence.OptionRepository;
-import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
+import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,6 +25,8 @@ public class StoreService {
     private final StoreRepository storeRepository;
 
     private final MemberRepository memberRepository;
+
+    private final BookmarkRepository bookmarkRepository;
 
     // 가게 생성
     public StoreEntity create(final StoreEntity storeEntity){
@@ -77,10 +77,25 @@ public class StoreService {
     }
 
     // 가게 목록
-    public List<StoreEntity> selectAllStore() {
+    public List<StoreDTO> selectAllStore() {
 
         List<StoreEntity> storeEntityList = storeRepository.findAll();
+        List<StoreDTO> storeDTOList = new ArrayList<>();
+        for (StoreEntity storeEntity : storeEntityList) {
+            StoreDTO storeDTO = new StoreDTO(storeEntity);
+            storeDTOList.add(storeDTO);
+        }
 
-        return storeEntityList;
+        return storeDTOList;
+    }
+
+    public StoreDTO viewStore(int memberId, StoreDTO storeDTO) {
+
+        StoreEntity storeEntity = storeRepository.findByStoreId(storeDTO.getStoreId());
+        StoreDTO newStoreDTO = new StoreDTO(storeEntity);
+        newStoreDTO.setBookmark(bookmarkRepository.countByMemberIdAndStoreId(memberId, storeDTO.getStoreId()));
+
+        return newStoreDTO;
+
     }
 }

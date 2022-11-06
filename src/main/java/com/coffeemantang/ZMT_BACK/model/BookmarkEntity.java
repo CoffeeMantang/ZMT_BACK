@@ -14,11 +14,14 @@ import javax.persistence.*;
 @Entity
 @Table(name = "bookmark")
 public class BookmarkEntity {
+
     @Id
     @JoinColumn(name = "member_id")
     @Column(name = "member_id")
     private int memberId;
+
     @JoinColumn(name = "store_id")
     @Column(name = "store_id")
-    private int storeId;
+    private String storeId;
+
 }
