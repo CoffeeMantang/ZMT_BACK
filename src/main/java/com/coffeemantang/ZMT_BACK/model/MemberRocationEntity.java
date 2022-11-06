@@ -31,4 +31,6 @@ public class MemberRocationEntity {
     private double addressX; // 위도
     @Column(name = "address_y")
     private double addressY; // 경도
+    @Column(name = "state")
+    private int state; // 1: 현재주소(기본주소)
 }
