@@ -274,5 +274,83 @@ public class ReviewService {
         }
     }
 
+    // 리뷰작성 가능여부
+    public boolean checkReview(final int memberId, final String storeId) throws Exception{
+        try{
+            // 한달 내에 해당 가게 + 해당 회원의 주문 내역 갯수와 리뷰 갯수 가져오기
+            // 한달 내의 리뷰 갯수
+            final int reviewCount = reviewRepository.countByStoreIdAndMemberId(storeId, memberId, LocalDateTime.now());
+            // 한달 내의 주문내역 갯수
+            final int orderCount = orderListRepository.countByStoreIdAndMemberId(storeId, memberId, LocalDateTime.now());
 
+            // 주문내역 갯수가 더 많으면 true 반환
+            if(orderCount > reviewCount){
+                return true;
+            }
+            return false;
+        }catch (Exception e){
+            log.warn("ReviewService checkReview() : Exception");
+            throw new RuntimeException("ReviewService checkReview() : Exception");
+        }
+    }
+
+    // 내 리뷰 가져오기
+    public List<ReviewDTO> getMyReview(final int memberId, final Pageable pageable) throws Exception{
+        try{
+            // 아이디 유효성검사
+            if(memberId < 1){
+                log.warn("ReviewService getMyReview() : memberId error");
+                throw new RuntimeException("ReviewService getMyReview() : memberId error");
+            }
+
+            // 해당 페이지의 내 리뷰 리스트 가져오기
+            Page<ReviewEntity> reviewPage = reviewRepository.findByMemberIdOrderByDateDesc(memberId, pageable);
+            List<ReviewEntity> reviewList = reviewPage.getContent();
+
+            List<ReviewDTO> listReviewDTO = new ArrayList<>();
+            // 해당 리뷰의 이미지 가져와서 DTO만들기
+            for (ReviewEntity list:reviewList) {
+                List<ReviewImgEntity> listReviewImgEntity = reviewImgRepository.findByReviewId(list.getReviewId());
+                // 1. 해당 리뷰의 ReviewDTO 만들기
+                ReviewDTO reviewDTO = new ReviewDTO(list);
+                // 2. 만든 ReviewDTO에 ReviewImgDTO 넣기
+                List<String> files = reviewDTO.getReviewFiles();
+                for(ReviewImgEntity list2: listReviewImgEntity){
+                    files.add(list2.getPath()); // path 넣기
+                }
+                // 3. 리턴할 list에 reviewDTO 추가
+                listReviewDTO.add(reviewDTO);
+            }
+
+            return listReviewDTO;
+        }catch (Exception e){
+            log.warn("ReviewService checkReview() : Exception");
+            throw new RuntimeException("ReviewService checkReview() : Exception");
+        }
+    }
+
+    // 리뷰 삭제하기
+    @Transactional
+    public boolean deleteReview(final int memberId, final int reviewId) throws Exception{
+        try{
+            // 아이디 유효성검사
+            if(memberId < 1){
+                log.warn("ReviewService getMyReview() : memberId error");
+                throw new RuntimeException("ReviewService getMyReview() : memberId error");
+            }
+            // 아이디와 리뷰아이디 매칭 체크
+            if(reviewRepository.countByMemberIdAndReviewId(memberId, reviewId) < 1){
+                return false;
+            }
+            // 삭제
+            Optional<ReviewEntity> oReview = reviewRepository.findByReviewId(reviewId);
+            if(oReview.isPresent()){
+                reviewRepository.delete(oReview.get());
+            }
+            return true;
+        }catch (Exception e){
+            log.warn("ReviewService deleteReview() : Exception");
+            throw new RuntimeException("ReviewService deleteReview() : Exception");
+        }
+    }
 }

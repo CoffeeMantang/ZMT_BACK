@@ -47,6 +47,12 @@ public class MemberEntity {
     private String answer; // 본인확인 답변
     @Column(name = "state")
     private int state; // 현재상태 0:메일인증안됨 1:메일인증됨
+    @Column(name = "address_x")
+    private double addressX;
+    @Column(name = "address_Y")
+    private double addressY;
+    @Column(name = "address")
+    private String address;
 
     public void changePassword(String password){
         this.password = password;

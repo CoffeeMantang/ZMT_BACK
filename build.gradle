@@ -36,6 +36,9 @@ dependencies {
 	implementation 'org.apache.commons:commons-lang3:3.12.0'
 	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-mail
 	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.7.4'
+	// https://mvnrepository.com/artifact/org.apache.commons/commons-text
+	implementation group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
+
 }
 
 tasks.named('test') {
