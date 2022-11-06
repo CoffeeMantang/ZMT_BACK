@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 // Member의 Repository
 public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
@@ -47,4 +49,12 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
     // 비밀번호 질문답변 가져오기
     @Query(value = "SELECT question, answer FROM member WHERE member_id = :memberId", nativeQuery = true)
     MemberEntity findQuestionAnswerByMemberId(@Param("memberId") int memberId);
+
+    // 반경 n km의 회원 리스트 가져오기
+    @Query(value = "SELECT member_id FROM member WHERE ST_Distance_Sphere(POINT(:x, :y), POINT(address_x, address_y)) < 10000", nativeQuery = true)
+    List<Integer> findMemberIdBySphere(@Param("x") double addressX, @Param("y") double addressY);
+
+    // 주소로 회원 리스트 가져오기
+    @Query(value = "SELECT member_id FROM member WHERE address LIKE '%:address%'", nativeQuery = true)
+    List<Integer> findMemberIdByAddress(@Param("address") String address);
 }

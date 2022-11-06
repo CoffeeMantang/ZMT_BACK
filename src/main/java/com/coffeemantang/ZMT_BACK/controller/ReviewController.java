@@ -139,21 +139,4 @@ public class ReviewController {
         }
     }
 
-    // 리뷰 삭제
-    @PostMapping("delete")
-    public ResponseEntity<?> deleteReview(@AuthenticationPrincipal String memberId, @RequestParam(value = "reviewId") int reviewId) throws Exception{
-        try{
-            if(reviewService.deleteReview(Integer.parseInt(memberId), reviewId)){
-                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
-                return ResponseEntity.ok().body(responseDTO);
-            }else{
-                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
-                return ResponseEntity.badRequest().body(responseDTO);
-            }
-        }catch (Exception e){
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-    }
-
 }

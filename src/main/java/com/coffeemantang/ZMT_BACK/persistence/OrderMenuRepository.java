@@ -2,6 +2,8 @@ package com.coffeemantang.ZMT_BACK.persistence;
 
 import com.coffeemantang.ZMT_BACK.model.OrderMenuEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,4 +21,18 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenuEntity, Long
 
     // 오더리스트 아이디로 전체 메뉴 가져오기
     public List<OrderMenuEntity> findAllByOrderlistId(String orderListId);
+
+    // 멤버아이디와 메뉴아이디로 주문횟수 가져오기
+    @Query(value = "SELECT COUNT(*) FROM( SELECT om.orderlist_id FROM ordermenu AS om INNER JOIN orderlist AS ol " +
+            "ON om.orderlist_id - ol.orderlist_id WHERE ol.member_id = :memberId AND om.menu_id = :menuId " +
+            "GROUP BY om.orderlist_id ) AS temp", nativeQuery = true)
+    public int countByMemberIdAndMenuId(@Param("memberId") int memberId, @Param("menuId") int menuId);
+
+    // 멤버아이디와 주소로 현재 지역에서 주문 가능하고 해당 회원이 주문한 메뉴 가져오기
+    @Query(value = "SELECT m.menu_id FROM ordermenu AS m INNER JOIN ( " +
+            "SELECT s.store_id FROM store AS s INNER JOIN charge AS c ON s.store_id = c.store_id WHERE c.dong " +
+            "LIKE CONCAT('%', :address, '%') ) AS temp " +
+            "INNER JOIN orderlist AS ol ON ol.orderlist_id = m.orderlist_id " +
+            "ON m.store_id = temp.store_id WHERE ol.member_id = :memberId GROUP BY menu_id ", nativeQuery = true)
+    public List<Integer> findMenuIdByMemberIdAndAddress(@Param("address") String address, @Param("memberId") int memberId);
 }
