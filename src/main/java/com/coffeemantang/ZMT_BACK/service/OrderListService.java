@@ -5,20 +5,14 @@ import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.lang.String;
 
 @Slf4j
 @Service
@@ -51,6 +45,7 @@ public class OrderListService {
             orderListEntity = new OrderListEntity();
             orderListEntity.setMemberId(memberId);
             orderListEntity.setStoreId(storeId);
+            orderListEntity.setMemberrocationId(memberRocationRepository.selectMemberrocationIdByMemberIdAndState(memberId));
             int price = menuRepository.selectPriceByMenuId(orderMenuDTO.getMenuId());
             for (OrderOptionDTO orderOptionDTO : orderMenuDTO.getOrderOptionDTOS()) {
                 price += optionRepository.selectPriceByOptionId(orderOptionDTO.getOptionId());
@@ -243,9 +238,59 @@ public class OrderListService {
         orderListEntity.setUserMessage(orderListDTO.getUserMessage());
         orderListEntity.setSpoon(orderListDTO.getSpoon());
         orderListEntity.setOrderDate(LocalDateTime.now());
+        orderListEntity.setMemberrocationId(memberRocationRepository.selectMemberrocationIdByMemberIdAndState(memberId));
         orderListRepository.save(orderListEntity);
 
         return orderListEntity;
+
+    }
+
+    //주문 수락
+    public OrderListEntity acceptOrder(int memberId, OrderListDTO orderListDTO) {
+
+        if (memberId != orderListDTO.getMemberId()) {
+            log.warn("OrderListService.waitingOrder() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("OrderListService.waitingOrder() : 로그인된 유저와 가게 소유자가 다릅니다.");
+        }
+
+        OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderListDTO.getOrderlistId());
+        orderListEntity.setState(2);
+        // 배달 예상 시간 가져오는 함수 넣을 예정
+        orderListEntity.setTime(orderListDTO.getTime());
+        orderListRepository.save(orderListEntity);
+
+        return orderListEntity;
+
+    }
+
+    //주문 취소
+    public OrderListEntity cancelOrder(int memberId, OrderListDTO orderListDTO) {
+
+        if (memberId != orderListDTO.getMemberId()) {
+            log.warn("OrderListService.waitingOrder() : 로그인된 유저와 주문 내역 소유자가 다릅니다.");
+            throw new RuntimeException("OrderListService.waitingOrder() : 로그인된 유저와 주문 내역 소유자가 다릅니다.");
+        }
+
+        OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderListDTO.getOrderlistId());
+        orderListEntity.setState(3);
+        orderListEntity.setCancelMessage(orderListDTO.getCancelMessage());
+        orderListRepository.save(orderListEntity);
+
+        return orderListEntity;
+
+    }
+
+    //주문 삭제
+    public void deleteOrder(int memberId, OrderListDTO orderListDTO) {
+
+        if (memberId != orderListDTO.getMemberId()) {
+            log.warn("OrderListService.waitingOrder() : 로그인된 유저와 주문 내역 소유자가 다릅니다.");
+            throw new RuntimeException("OrderListService.waitingOrder() : 로그인된 유저와 주문 내역 소유자가 다릅니다.");
+        }
+
+        OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderListDTO.getOrderlistId());
+        orderListEntity.setState(4);
+        orderListRepository.save(orderListEntity);
 
     }
 

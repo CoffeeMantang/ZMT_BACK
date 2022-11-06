@@ -3,19 +3,13 @@ package com.coffeemantang.ZMT_BACK.controller;
 import com.coffeemantang.ZMT_BACK.dto.OrderListDTO;
 import com.coffeemantang.ZMT_BACK.dto.OrderMenuDTO;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
-import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.OrderListEntity;
-import com.coffeemantang.ZMT_BACK.model.OrderMenuEntity;
 import com.coffeemantang.ZMT_BACK.service.OrderListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import javax.xml.ws.Response;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -70,28 +64,15 @@ public class OrderListController {
 
     // 오더리스트 메뉴 보기
     @PostMapping("/list")
-    public ResponseEntity<?> viewMenuList(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+    public OrderListDTO viewMenuList(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
 
         try {
             OrderListDTO newOrderListDTO = orderListService.viewMenuList(Integer.parseInt(memberId), orderListDTO);
-            if(newOrderListDTO != null){
-                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
-                        .menuDTOList(newOrderListDTO.getMenuDTOList())
-                        .build();
-                return ResponseEntity.ok().body(responseOrderListDTO);
-
-            }else {
-                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
-                return ResponseEntity.badRequest().body(responseDTO);
-            }
+            return newOrderListDTO;
         } catch (Exception e) {
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
+            e.printStackTrace();
+            throw new RuntimeException("오더리스트 메뉴 리스트를 가져오는 도중 오류 발생");
         }
-//        catch (Exception e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("오더리스트 메뉴 리스트를 가져오는 도중 오류 발생");
-//        }
     }
 
     // 결제 완료 후. 주문 대기 상태
@@ -109,6 +90,9 @@ public class OrderListController {
                         .spoon(orderListEntity.getSpoon())
                         .userMessage(orderListEntity.getUserMessage())
                         .price(orderListEntity.getPrice())
+                        .charge(orderListEntity.getCharge())
+                        .memberrocationId(orderListEntity.getMemberrocationId())
+                        .orderMenuDTOList(orderListDTO.getOrderMenuDTOList())
                         .build();
                 return ResponseEntity.ok().body(responseOrderListDTO);
             } else {
@@ -120,5 +104,78 @@ public class OrderListController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
+    // 주문 수락
+    @PostMapping("/accept")
+    public ResponseEntity<?> acceptOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+
+        try {
+            OrderListEntity orderListEntity = orderListService.acceptOrder(Integer.parseInt(memberId), orderListDTO);
+            if (orderListEntity != null) {
+                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
+                        .orderlistId(orderListEntity.getOrderlistId())
+                        .memberId(orderListEntity.getMemberId())
+                        .storeId(orderListEntity.getStoreId())
+                        .orderDate(orderListEntity.getOrderDate())
+                        .spoon(orderListEntity.getSpoon())
+                        .userMessage(orderListEntity.getUserMessage())
+                        .price(orderListEntity.getPrice())
+                        .charge(orderListEntity.getCharge())
+                        .time(orderListEntity.getTime())
+                        .memberrocationId(orderListEntity.getMemberrocationId())
+                        .orderMenuDTOList(orderListDTO.getOrderMenuDTOList())
+                        .build();
+                return ResponseEntity.ok().body(responseOrderListDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 주문 취소
+    @PostMapping("/cancel")
+    public ResponseEntity<?> cancelOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+
+        try {
+            OrderListEntity orderListEntity = orderListService.cancelOrder(Integer.parseInt(memberId), orderListDTO);
+            if (orderListEntity != null) {
+                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
+                        .orderlistId(orderListEntity.getOrderlistId())
+                        .memberId(orderListEntity.getMemberId())
+                        .storeId(orderListEntity.getStoreId())
+                        .orderDate(orderListEntity.getOrderDate())
+                        .spoon(orderListEntity.getSpoon())
+                        .userMessage(orderListEntity.getUserMessage())
+                        .price(orderListEntity.getPrice())
+                        .charge(orderListEntity.getCharge())
+                        .time(orderListEntity.getTime())
+                        .cancelMessage(orderListEntity.getCancelMessage())
+                        .memberrocationId(orderListEntity.getMemberrocationId())
+                        .orderMenuDTOList(orderListDTO.getOrderMenuDTOList())
+                        .build();
+                return ResponseEntity.ok().body(responseOrderListDTO);
+            } else {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 주문 삭제
+    @PostMapping("/deleteorder")
+    public String deleteOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+
+        orderListService.deleteOrder(Integer.parseInt(memberId), orderListDTO);
+
+        return "redirect:/";
+    }
+
 
 }

@@ -1,15 +1,11 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
-import com.coffeemantang.ZMT_BACK.dto.*;
-import com.coffeemantang.ZMT_BACK.model.MenuEntity;
+import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
+import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
-import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
-import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
-import com.coffeemantang.ZMT_BACK.security.TokenProvider;
 import com.coffeemantang.ZMT_BACK.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -102,16 +98,30 @@ public class StoreController {
 
     // 가게 목록
     @PostMapping("/list")
-    public List<StoreEntity> selectAllStore() {
+    public List<StoreDTO> selectAllStore() {
 
         try {
-            List<StoreEntity> storeEntityList = storeService.selectAllStore();
-            return storeEntityList;
+            List<StoreDTO> storeDTOList = storeService.selectAllStore();
+            return storeDTOList;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("가게 리스트를 가져오는 도중 오류 발생");
         }
         
+    }
+
+    // 가게 보기 (클릭했을 때) (로그인한 유저 입장)
+    @PostMapping("/view")
+    public StoreDTO viewStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO) {
+
+        try {
+            StoreDTO responseStoreDTO = storeService.viewStore(Integer.parseInt(memberId), storeDTO);
+            return responseStoreDTO;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("가게 정보를 가져오는 도중 오류 발생");
+        }
+
     }
 
 }

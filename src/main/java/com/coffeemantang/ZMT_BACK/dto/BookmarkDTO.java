@@ -14,7 +14,7 @@ public class BookmarkDTO {
 
     private int memberId;
 
-    private int storeId;
+    private String storeId;
 
     public BookmarkDTO(final BookmarkEntity bookmarkEntity) {
 
