@@ -37,7 +37,7 @@ public class BookmarkService {
             throw new RuntimeException("StoreService.updateOption() : 로그인된 유저와 북마크 소유자가 다릅니다.");
         }
 
-//        bookmarkRepository.deleteById(bookmarkDTO.);
+        bookmarkRepository.deleteByMemberIdAndStoreId(bookmarkDTO.getMemberId(), bookmarkDTO.getStoreId());
 
     }
 
@@ -49,10 +49,10 @@ public class BookmarkService {
         for (BookmarkEntity bookmarkEntity : bookmarkEntityList) {
             BookmarkDTO bookmarkDTO = new BookmarkDTO(bookmarkEntity);
             bookmarkDTOList.add(bookmarkDTO);
-            System.out.println(bookmarkDTO);
         }
 
         return bookmarkDTOList;
+
     }
 
 }

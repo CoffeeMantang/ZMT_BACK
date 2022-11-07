@@ -2,6 +2,7 @@ package com.coffeemantang.ZMT_BACK.persistence;
 
 import com.coffeemantang.ZMT_BACK.model.BookmarkEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -12,4 +13,8 @@ public interface BookmarkRepository extends JpaRepository<BookmarkEntity, Intege
 
     // memberId로 즐겨찾기 목록 가져오기
     List<BookmarkEntity> findAllByMemberId(int memberId);
+
+    // memberId와 storeId로 삭제하기
+    @Transactional
+    void deleteByMemberIdAndStoreId(int memberId, String storeId);
 }

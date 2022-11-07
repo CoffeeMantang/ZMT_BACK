@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -145,11 +146,17 @@ public class MenuService {
     }
 
     // 메뉴 목록
-    public List<MenuEntity> selectAllMenu(String storeId) {
+    public List<MenuDTO> viewMenuList(String storeId) {
 
         List<MenuEntity> menuEntityList = menuRepository.selectMenuOrderByMenuNumber(storeId, 2);
+        List<MenuDTO> menuDTOList = new ArrayList<>();
+        for(MenuEntity menuEntity : menuEntityList) {
+            MenuDTO menuDTO = new MenuDTO(menuEntity);
+            menuDTOList.add(menuDTO);
+        }
 
-        return menuEntityList;
+        return menuDTOList;
+
     }
 
 }

@@ -77,7 +77,7 @@ public class StoreService {
     }
 
     // 가게 목록
-    public List<StoreDTO> selectAllStore() {
+    public List<StoreDTO> viewStoreList() {
 
         List<StoreEntity> storeEntityList = storeRepository.findAll();
         List<StoreDTO> storeDTOList = new ArrayList<>();
@@ -89,11 +89,14 @@ public class StoreService {
         return storeDTOList;
     }
 
+    // 가게 보기(클릭했을 때).
     public StoreDTO viewStore(int memberId, StoreDTO storeDTO) {
 
         StoreEntity storeEntity = storeRepository.findByStoreId(storeDTO.getStoreId());
         StoreDTO newStoreDTO = new StoreDTO(storeEntity);
-        newStoreDTO.setBookmark(bookmarkRepository.countByMemberIdAndStoreId(memberId, storeDTO.getStoreId()));
+        if (memberId != 0){ // 비회원이면 0
+            newStoreDTO.setBookmark(bookmarkRepository.countByMemberIdAndStoreId(memberId, storeDTO.getStoreId()));
+        }
 
         return newStoreDTO;
 
