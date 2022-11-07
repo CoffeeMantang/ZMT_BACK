@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -144,10 +145,18 @@ public class OptionService {
     }
 
     // 옵션 목록
-    public List<OptionEntity> selectAllOption(int menuId) {
+    public List<OptionDTO> viewOptionList(int menuId) {
 
         List<OptionEntity> optionEntityList = optionRepository.findByMenuIdOrderByOptionNumber(menuId);
+        List<OptionDTO> optionDTOList = new ArrayList<>();
+        for (OptionEntity optionEntity : optionEntityList) {
+            OptionDTO optionDTO = new OptionDTO(optionEntity);
+            optionDTOList.add(optionDTO);
+        }
 
-        return optionEntityList;
+        return optionDTOList;
+
     }
+
+
 }

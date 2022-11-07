@@ -127,16 +127,7 @@ public class MenuController {
 
     }
 
-    // 메뉴 목록
-    @PostMapping("/list")
-    public List<MenuEntity> selectAllMenu(String storeId) {
 
-        try {
-            List<MenuEntity> menuEntityList = menuService.selectAllMenu(storeId);
-            return menuEntityList;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("메뉴 리스트를 가져오는 도중 오류 발생");
-        }
-    }
+
+
 }

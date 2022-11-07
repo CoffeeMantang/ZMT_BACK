@@ -16,6 +16,10 @@ import javax.persistence.*;
 public class ChargeEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "charge_id")
+    private int chargeId;
+
     @Column(name = "store_id")
     @JoinColumn(name = "store_id")
     private String storeId;

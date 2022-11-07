@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChargeDTO {
 
+    private int chargeId;
+
     private String storeId;
 
     private String dong;
@@ -20,6 +22,7 @@ public class ChargeDTO {
 
     public ChargeDTO(final ChargeEntity chargeEntity) {
 
+        this.chargeId = chargeEntity.getChargeId();
         this.storeId = chargeEntity.getStoreId();
         this.dong = chargeEntity.getDong();
         this.charge = chargeEntity.getCharge();
@@ -29,6 +32,7 @@ public class ChargeDTO {
     public static ChargeEntity toEntity(final ChargeDTO chargeDTO) {
 
         return ChargeEntity.builder()
+                .chargeId(chargeDTO.getChargeId())
                 .storeId(chargeDTO.getStoreId())
                 .dong(chargeDTO.getDong())
                 .charge(chargeDTO.getCharge())

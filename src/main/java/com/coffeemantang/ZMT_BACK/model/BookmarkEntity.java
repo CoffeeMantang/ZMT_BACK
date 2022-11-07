@@ -16,6 +16,10 @@ import javax.persistence.*;
 public class BookmarkEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bookmark_id")
+    private int bookmarkId;
+
     @JoinColumn(name = "member_id")
     @Column(name = "member_id")
     private int memberId;

@@ -96,20 +96,6 @@ public class StoreController {
         return "redirect:/";
     }
 
-    // 가게 목록
-    @PostMapping("/list")
-    public List<StoreDTO> selectAllStore() {
-
-        try {
-            List<StoreDTO> storeDTOList = storeService.selectAllStore();
-            return storeDTOList;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("가게 리스트를 가져오는 도중 오류 발생");
-        }
-        
-    }
-
     // 가게 보기 (클릭했을 때) (로그인한 유저 입장)
     @PostMapping("/view")
     public StoreDTO viewStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO) {
@@ -123,5 +109,7 @@ public class StoreController {
         }
 
     }
+
+    //
 
 }
