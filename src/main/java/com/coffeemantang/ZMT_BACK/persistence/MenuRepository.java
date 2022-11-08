@@ -8,6 +8,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
@@ -53,11 +54,19 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
     @Query(value = "SELECT store_id FROM menu WHERE menu_id = :menuId", nativeQuery = true)
     String selectStoreIdByMenuId(@Param("menuId") int menuId);
 
-    // 배달 가능한 가게의 메뉴 엔티티 가져오기
+    // 배달 가능한 가게의 메뉴 엔티티 가져오기(위치기준)
     @Query(value = "SELECT m.menu_id, m.tag FROM menu AS m INNER JOIN ( " +
             "SELECT s.store_id FROM store AS s INNER JOIN charge AS c ON s.store_id = c.store_id AND c.dong = :dong " +
             "WHERE s.state = 1 AND ST_Distance_Sphere(POINT(:x, :y), POINT(s.address_x, s.address_y)) < 10000 " +
             ") AS asdf ON asdf.store_id = m.store_id WHERE menu_id.state = 0", nativeQuery = true)
     List<MenuEntity> findMenuIdAndTagByMemberInfo(@Param("dong") String dong, @Param("x") double addressX, @Param("y") double addressY);
+
+    // 메뉴 아이디로 태그 가져오기
+    Optional<String> findTagByMenuId(int menuId);
+
+    // 현재 위치에서 주문 가능한 메뉴 가져오기(동 기준)
+    @Query(value = "SELECT m.menu_id, m.tag FROM menu AS m INNER JOIN store AS s ON m.store_id = s.store_id " +
+            "INNER JOIN charge AS c ON s.store_id = c.store_id AND c.dong LIKE CONCAT('%', :address, '%') ", nativeQuery = true)
+    List<MenuEntity> findMenuByAddress(@Param("address") String address);
 
 }
