@@ -3,6 +3,7 @@ package com.coffeemantang.ZMT_BACK.persistence;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,6 +27,9 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
             "GROUP BY store_id", nativeQuery = true)
     StoreEntity findByMenuId(int menuId);
 
+    // 가게 아이디로 회원 아이디 찾기
+    @Query(value = "SELECT member_id FROM store WHERE store_id = :storeId", nativeQuery = true)
+    int selectMemberIdByStoreId(@Param("storeId") String storeId);
 
 }
 

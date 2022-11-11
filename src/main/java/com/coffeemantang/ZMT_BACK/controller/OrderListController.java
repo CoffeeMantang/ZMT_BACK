@@ -175,6 +175,7 @@ public class OrderListController {
         orderListService.deleteOrder(Integer.parseInt(memberId), orderListDTO);
 
         return "redirect:/";
+
     }
 
 
