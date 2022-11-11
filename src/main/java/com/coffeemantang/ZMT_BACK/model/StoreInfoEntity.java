@@ -27,63 +27,63 @@ public class StoreInfoEntity {
     @Column(name = "tel")
     private String tel;
     
-    @Column(name = "openTime1")
+    @Column(name = "opentime1")
     private LocalTime openTime1;
-    @Column(name = "openTime2")
+    @Column(name = "opentime2")
     private LocalTime openTime2;
-    @Column(name = "openTime3")
+    @Column(name = "opentime3")
     private LocalTime openTime3;
-    @Column(name = "openTime4")
+    @Column(name = "opentime4")
     private LocalTime openTime4;
-    @Column(name = "openTime5")
+    @Column(name = "opentime5")
     private LocalTime openTime5;
-    @Column(name = "openTime6")
+    @Column(name = "opentime6")
     private LocalTime openTime6;
-    @Column(name = "openTime7")
+    @Column(name = "opentime7")
     private LocalTime openTime7;
     
-    @Column(name = "closeTime1")
+    @Column(name = "closetime1")
     private LocalTime closeTime1;
-    @Column(name = "closeTime2")
+    @Column(name = "closetime2")
     private LocalTime closeTime2;
-    @Column(name = "closeTime3")
+    @Column(name = "closetime3")
     private LocalTime closeTime3;
-    @Column(name = "closeTime4")
+    @Column(name = "closetime4")
     private LocalTime closeTime4;
-    @Column(name = "closeTime5")
+    @Column(name = "closetime5")
     private LocalTime closeTime5;
-    @Column(name = "closeTime6")
+    @Column(name = "closetime6")
     private LocalTime closeTime6;
-    @Column(name = "closeTime7")
+    @Column(name = "closetime7")
     private LocalTime closeTime7;
 
-    @Column(name = "breakTimeStart1")
+    @Column(name = "breaktimestart1")
     private LocalTime breakTimeStart1;
-    @Column(name = "breakTimeStart2")
+    @Column(name = "breaktimestart2")
     private LocalTime breakTimeStart2;
-    @Column(name = "breakTimeStart3")
+    @Column(name = "breaktimestart3")
     private LocalTime breakTimeStart3;
-    @Column(name = "breakTimeStart4")
+    @Column(name = "breaktimestart4")
     private LocalTime breakTimeStart4;
-    @Column(name = "breakTimeStart5")
+    @Column(name = "breaktimestart5")
     private LocalTime breakTimeStart5;
-    @Column(name = "breakTimeStart6")
+    @Column(name = "breaktimestart6")
     private LocalTime breakTimeStart6;
-    @Column(name = "breakTimeStart7")
+    @Column(name = "breaktimestart7")
     private LocalTime breakTimeStart7;
 
-    @Column(name = "breakTimeEnd1")
+    @Column(name = "breaktimeend1")
     private LocalTime breakTimeEnd1;
-    @Column(name = "breakTimeEnd2")
+    @Column(name = "breaktimeend2")
     private LocalTime breakTimeEnd2;
-    @Column(name = "breakTimeEnd3")
+    @Column(name = "breaktimeend3")
     private LocalTime breakTimeEnd3;
-    @Column(name = "breakTimeEnd4")
+    @Column(name = "breaktimeend4")
     private LocalTime breakTimeEnd4;
-    @Column(name = "breakTimeEnd5")
+    @Column(name = "breaktimeend5")
     private LocalTime breakTimeEnd5;
-    @Column(name = "breakTimeEnd6")
+    @Column(name = "breaktimeend6")
     private LocalTime breakTimeEnd6;
-    @Column(name = "breakTimeEnd7")
+    @Column(name = "breaktimeend7")
     private LocalTime breakTimeEnd7;
 }

@@ -65,39 +65,6 @@ public class BoardController {
 
     }
 
-    // 글 보기
-    @PostMapping("/view")
-    public ResponseEntity<?> viewBoard(@RequestBody BoardDTO boardDTO) {
-
-        try {
-            BoardDTO responseBoardDTO =  boardService.viewBoard(boardDTO);
-            return ResponseEntity.ok().body(responseBoardDTO);
-        } catch (Exception e) {
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-
-    }
-
-    // 글 목록
-    @PostMapping("/list")
-    public ResponseEntity<?> viewBoardList(@RequestParam int type, @PageableDefault(size = 15) Pageable pageable) {
-
-        try {
-            List<BoardDTO> boardDTOList = boardService.viewBoardList(type, pageable);
-            if (boardDTOList.isEmpty()) {
-                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
-                return ResponseEntity.ok().body(responseDTO);
-            } else {
-                return ResponseEntity.ok().body(boardDTOList);
-            }
-        } catch (Exception e) {
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-
-    }
-
     // 내가 쓴 글 목록
     @PostMapping("/mylist")
     public ResponseEntity<?> viewBoardMyList(@AuthenticationPrincipal String memberId, @PageableDefault(size = 15) Pageable pageable) {

@@ -1,18 +1,13 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
-import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
-import com.coffeemantang.ZMT_BACK.dto.OptionDTO;
-import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
-import com.coffeemantang.ZMT_BACK.service.MenuService;
-import com.coffeemantang.ZMT_BACK.service.OptionService;
-import com.coffeemantang.ZMT_BACK.service.StoreService;
+import com.coffeemantang.ZMT_BACK.dto.*;
+import com.coffeemantang.ZMT_BACK.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,6 +22,10 @@ public class NonmemberController {
     private final MenuService menuService;
 
     private final OptionService optionService;
+
+    private final BoardService boardService;
+
+    private final StoreInfoService storeInfoService;
 
     // 가게 목록
     @PostMapping("/store/list")
@@ -70,6 +69,18 @@ public class NonmemberController {
 
     }
 
+    // 가게 정보
+    @PostMapping("/store/info")
+    public StoreInfoDTO viewStoreInfo(@RequestBody StoreDTO storeDTO) {
+
+        try {
+            StoreInfoDTO storeInfoDTO = storeInfoService.viewStoreInfo(storeDTO);
+            return storeInfoDTO;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("가게 정보를 가져오는 도중 오류 발생");
+        }
+    }
 
     // 옵션 목록
     @PostMapping("/store/option")
@@ -85,5 +96,37 @@ public class NonmemberController {
 
     }
 
+    // 게시판 글 보기
+    @PostMapping("/board/view")
+    public ResponseEntity<?> viewBoard(@RequestBody BoardDTO boardDTO) {
+
+        try {
+            BoardDTO responseBoardDTO =  boardService.viewBoard(boardDTO);
+            return ResponseEntity.ok().body(responseBoardDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
+
+    // 글 목록
+    @PostMapping("/board/list")
+    public ResponseEntity<?> viewBoardList(@RequestParam int type, @PageableDefault(size = 15) Pageable pageable) {
+
+        try {
+            List<BoardDTO> boardDTOList = boardService.viewBoardList(type, pageable);
+            if (boardDTOList.isEmpty()) {
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            } else {
+                return ResponseEntity.ok().body(boardDTOList);
+            }
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
 
 }

@@ -2,7 +2,9 @@ package com.coffeemantang.ZMT_BACK.controller;
 
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
+import com.coffeemantang.ZMT_BACK.dto.StoreInfoDTO;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
+import com.coffeemantang.ZMT_BACK.service.StoreInfoService;
 import com.coffeemantang.ZMT_BACK.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -21,6 +22,8 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
+
+    private final StoreInfoService storeInfoService;
 
     // 가게 생성
     @PostMapping("/create")
@@ -110,6 +113,33 @@ public class StoreController {
 
     }
 
-    //
+    // 가게 정보 입력
+    @PostMapping("/addinfo")
+    public ResponseEntity<?> addStoreInfo(@AuthenticationPrincipal String memberId, @RequestBody StoreInfoDTO storeInfoDTO) {
+
+        try {
+            storeInfoService.addStoreInfo(Integer.parseInt(memberId), storeInfoDTO);
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+            return ResponseEntity.ok().body(responseDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
+
+    // 가게 정보 수정
+    @PostMapping("/updateinfo")
+    public ResponseEntity<?> updateStoreInfo(@AuthenticationPrincipal String memberId, @RequestBody StoreInfoDTO storeInfoDTO) {
+
+        try {
+            StoreInfoDTO responseStoreInfoDTO = storeInfoService.updateStoreInfo(Integer.parseInt(memberId), storeInfoDTO);
+            return ResponseEntity.ok().body(responseStoreInfoDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
 
 }
