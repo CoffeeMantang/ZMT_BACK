@@ -62,10 +62,10 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
     List<MenuEntity> findMenuIdAndTagByMemberInfo(@Param("dong") String dong, @Param("x") double addressX, @Param("y") double addressY);
 
     // 메뉴 아이디로 태그 가져오기
-    Optional<String> findTagByMenuId(int menuId);
+    MenuEntity findTagByMenuId(int menuId);
 
     // 현재 위치에서 주문 가능한 메뉴 가져오기(동 기준)
-    @Query(value = "SELECT m.menu_id, m.tag FROM menu AS m INNER JOIN store AS s ON m.store_id = s.store_id " +
+    @Query(value = "SELECT * FROM menu AS m INNER JOIN store AS s ON m.store_id = s.store_id " +
             "INNER JOIN charge AS c ON s.store_id = c.store_id AND c.dong LIKE CONCAT('%', :address, '%') ", nativeQuery = true)
     List<MenuEntity> findMenuByAddress(@Param("address") String address);
 

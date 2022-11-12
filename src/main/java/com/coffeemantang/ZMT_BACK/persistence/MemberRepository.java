@@ -55,6 +55,8 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
     List<Integer> findMemberIdBySphere(@Param("x") double addressX, @Param("y") double addressY);
 
     // 주소로 회원 리스트 가져오기
-    @Query(value = "SELECT member_id FROM member WHERE address LIKE '%:address%'", nativeQuery = true)
+    @Query(value = "SELECT m.member_id FROM member AS m INNER JOIN memberrocation AS mr ON m.member_id = mr.member_id " +
+            "AND mr.address1 LIKE CONCAT('%',:address,'%') GROUP BY member_id", nativeQuery = true)
     List<Integer> findMemberIdByAddress(@Param("address") String address);
+
 }
