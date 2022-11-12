@@ -2,6 +2,7 @@ package com.coffeemantang.ZMT_BACK.service;
 
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
+import com.coffeemantang.ZMT_BACK.persistence.MemberRocationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.annotations.DynamicUpdate;
@@ -19,6 +20,8 @@ import java.lang.reflect.Member;
 public class MemberService {
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private MemberRocationRepository memberRocationRepository;
 
     // 새 계정 생성 - 이메일 중복 검사
     public MemberEntity create(final MemberEntity memberEntity){
@@ -254,5 +257,14 @@ public class MemberService {
             return false;
         }
         return true;
+    }
+
+    // 대표주소(Address1)만 가져오기
+    public String getMainAddress(final int memberId){
+        if(memberId < 1){
+            log.warn("MemberService.getMainAddress() : memberId 값이 이상해요");
+            throw new RuntimeException("MemberService.getMainAddress() : memberId 값이 이상해요");
+        }
+        return memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1);
     }
 }

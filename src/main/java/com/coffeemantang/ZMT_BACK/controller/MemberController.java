@@ -2,6 +2,7 @@ package com.coffeemantang.ZMT_BACK.controller;
 
 import com.coffeemantang.ZMT_BACK.dto.FindPwDTO;
 import com.coffeemantang.ZMT_BACK.dto.MemberDTO;
+import com.coffeemantang.ZMT_BACK.dto.MemberRocationDTO;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.security.TokenProvider;
@@ -301,6 +302,18 @@ public class MemberController {
                 return ResponseEntity.badRequest().body(responseDTO);
             }
         }catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+    // 대표 주소 가져오기
+    @PostMapping("/getmainaddress")
+    public ResponseEntity<?> getMainAddress(@AuthenticationPrincipal String memberId) throws Exception{
+        try{
+            String address1 = memberService.getMainAddress(Integer.parseInt(memberId));
+            MemberRocationDTO mrDTO = MemberRocationDTO.builder().address1(address1).build();
+            return ResponseEntity.ok().body(mrDTO);
+        }catch (Exception e){
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }

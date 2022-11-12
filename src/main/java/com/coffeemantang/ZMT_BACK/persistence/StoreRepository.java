@@ -23,8 +23,7 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
     StoreEntity findByStoreIdAndMemberId(String storeId, int memberId);
 
     // 메뉴아이디로 가게정보 가져오기
-    @Query(value="SELECT s.name, s.store_id FROM store AS s INNER JOIN menu AS m ON s.store_id = m.store_id AND m.menu_id = :menuId " +
-            "GROUP BY store_id", nativeQuery = true)
+    @Query(value="SELECT * FROM store AS s INNER JOIN menu AS m ON s.store_id = m.store_id AND m.menu_id = :menuId limit 1", nativeQuery = true)
     StoreEntity findByMenuId(int menuId);
 
     // 가게 아이디로 회원 아이디 찾기

@@ -31,4 +31,5 @@ public class MemberDTO {
     private int type;
     private String question;
     private String answer;
+    private String address;
 }
