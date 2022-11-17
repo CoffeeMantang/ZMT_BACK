@@ -2,10 +2,7 @@ package com.coffeemantang.ZMT_BACK.service;
 
 import com.coffeemantang.ZMT_BACK.dto.ReviewCommentDTO;
 import com.coffeemantang.ZMT_BACK.dto.ReviewDTO;
-import com.coffeemantang.ZMT_BACK.model.ReviewCommentEntity;
-import com.coffeemantang.ZMT_BACK.model.ReviewEntity;
-import com.coffeemantang.ZMT_BACK.model.ReviewImgEntity;
-import com.coffeemantang.ZMT_BACK.model.ReviewRecommendEntity;
+import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +36,8 @@ public class ReviewService {
     private OrderListRepository orderListRepository;
     @Autowired
     private ReviewRecommendRepository reviewRecommendRepository;
+    @Autowired
+    private MemberRepository memberRepository;
 
     public void create(final int memberId, final ReviewDTO reviewDTO) throws Exception {
         // 리뷰 엔티티 생성
@@ -214,28 +213,44 @@ public class ReviewService {
                 throw new RuntimeException("ReviewService getStoreReviewList() : storeId error");
             }
 
+            log.warn("들어온 가게아이디: " + storeId);
+
             // 해당 페이지의 가게 리뷰 리스트 가져오기
             Page<ReviewEntity> reviewPage = reviewRepository.findByStoreIdOrderByDateDesc(storeId, pageable);
+            if(reviewPage == null){
+                log.warn("reviewPage는 널이예요");
+            }
             List<ReviewEntity> reviewList = reviewPage.getContent();
+            log.warn("reviewList의 갯수는" + reviewList.size());
+
 
             List<ReviewDTO> listReviewDTO = new ArrayList<>();
             // 해당 리뷰의 이미지 가져와서 DTO만들기
             for (ReviewEntity list:reviewList) {
+                log.warn("리뷰아이디" + list.getReviewId() + "인 리뷰의 이미지 찾기");
                 List<ReviewImgEntity> listReviewImgEntity = reviewImgRepository.findByReviewId(list.getReviewId());
                 // 1. 해당 리뷰의 ReviewDTO 만들기
                 ReviewDTO reviewDTO = new ReviewDTO(list);
                 // 2. 만든 ReviewDTO에 ReviewImgDTO 넣기
-                List<String> files = reviewDTO.getReviewFiles();
-                for(ReviewImgEntity list2: listReviewImgEntity){
-                    files.add(list2.getPath()); // path 넣기
+                List<String> imageList = new ArrayList<>();
+                log.warn("listReviewImgEntity의 사이즈 " + listReviewImgEntity.size());
+                if(listReviewImgEntity.size() > 0){
+                    for(ReviewImgEntity list2: listReviewImgEntity){
+                        imageList.add("http://localhost:8080/images/review/" + list2.getPath()); // path 넣기
+                    }
                 }
-                // 3. 리턴할 list에 reviewDTO 추가
+                reviewDTO.setImages(imageList);
+                // 3. 유저의 닉네임 추가
+                MemberEntity memberEntity = memberRepository.findByMemberId(list.getMemberId());
+                reviewDTO.setNickname(memberEntity.getNickname());
+                // 리턴할 list에 reviewDTO 추가
                 listReviewDTO.add(reviewDTO);
             }
 
             return listReviewDTO;
         }catch (Exception e){
-            return null;
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
         }
     }
 

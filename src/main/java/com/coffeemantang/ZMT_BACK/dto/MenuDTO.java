@@ -36,6 +36,7 @@ public class MenuDTO {
     private String tag;
 
     private int menuNumber;
+    private String menuPic;
 
     @NotNull
     private int state;

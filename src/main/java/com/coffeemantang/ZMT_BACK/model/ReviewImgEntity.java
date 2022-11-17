@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "review")
+@Table(name = "reviewimg")
 public class ReviewImgEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // DB에서 자동증가

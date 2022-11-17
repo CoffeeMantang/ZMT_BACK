@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,6 +21,15 @@ public class StoreDTO {
 
     @NotBlank
     private String storeId;
+
+    private int min; // 최소주문금액
+    
+    private double score; // 리뷰평점
+    
+    private List<MenuDTO> menuList;
+
+    private List<ImageDTO> images; // 이미지 여러개 담아갈 때 사용
+    private long reviewCount; // 리뷰갯수
 
     @NotNull
     private int memberId; // 가게주인

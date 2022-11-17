@@ -28,6 +28,8 @@ public class ReviewDTO {
     private int recommend; // 추천갯수
     private List<MultipartFile> files; // 넘어올 파일
     private List<String> reviewFiles; // 파일의 경로 + 파일명
+    private List<String> images;
+    private String nickname;
 
     // ReviewEntity를 ReviewDTO로
     public ReviewDTO (final ReviewEntity reviewEntity){

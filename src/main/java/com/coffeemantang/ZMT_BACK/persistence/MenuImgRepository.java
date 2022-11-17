@@ -5,5 +5,5 @@ import com.coffeemantang.ZMT_BACK.model.MenuImgEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MenuImgRepository extends JpaRepository<MenuImgEntity, Integer> {
-    MenuImgEntity findByMenuId(int menuId);
+    MenuImgEntity findTop1ByMenuId(int menuId);
 }
