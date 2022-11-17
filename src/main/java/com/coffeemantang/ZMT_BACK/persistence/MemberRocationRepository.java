@@ -28,6 +28,9 @@ public interface MemberRocationRepository extends JpaRepository<MemberRocationEn
     List<Integer> findMemberIdByAddress(@Param("address") String address);
 
     // 아이디로 해당 상태의 주소만 가져오기
-    String findAddress1ByMemberIdAndState(int memberId, int state);
+    MemberRocationEntity findAddress1ByMemberIdAndState(int memberId, int state);
+
+    // 아이디로 모든 주소 가져오기
+    List<MemberRocationEntity> findAllByMemberId(int memberId);
 
 }

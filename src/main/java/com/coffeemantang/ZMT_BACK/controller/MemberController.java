@@ -1,9 +1,6 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
-import com.coffeemantang.ZMT_BACK.dto.FindPwDTO;
-import com.coffeemantang.ZMT_BACK.dto.MemberDTO;
-import com.coffeemantang.ZMT_BACK.dto.MemberRocationDTO;
-import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
+import com.coffeemantang.ZMT_BACK.dto.*;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.security.TokenProvider;
 import com.coffeemantang.ZMT_BACK.service.EmailTokenService;
@@ -13,13 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.xml.ws.Response;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -313,6 +310,43 @@ public class MemberController {
             String address1 = memberService.getMainAddress(Integer.parseInt(memberId));
             MemberRocationDTO mrDTO = MemberRocationDTO.builder().address1(address1).build();
             return ResponseEntity.ok().body(mrDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+    // 모든 주소 가져오기
+    @PostMapping("/getalladdress")
+    public ResponseEntity<?> getAllAddress(@AuthenticationPrincipal String memberId) throws Exception{
+        try{
+            List<MemberRocationDTO> list = memberService.getAllAddress(Integer.parseInt(memberId));
+            ResponseDTO responseDTO = ResponseDTO.builder().data(Collections.singletonList(list)).error("ok").build();
+            return ResponseEntity.ok().body(list);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+    // 새 주소 저장하기
+    @PostMapping("/newaddress")
+    public ResponseEntity<?> newAddress(@AuthenticationPrincipal String memberId, @RequestBody MemberRocationDTO dto) throws Exception{
+        try{
+            memberService.newAddress(Integer.parseInt(memberId), dto);
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 최근 검색어 10개 가져오기
+    @GetMapping("/getSearchList")
+    public ResponseEntity<?> getSearchList(@AuthenticationPrincipal String memberId) throws Exception{
+        try{
+            List<SearchDTO> result = memberService.getSearchList(Integer.parseInt(memberId));
+            ResponseDTO responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).build();
+            return ResponseEntity.ok().body(responseDTO);
         }catch (Exception e){
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);

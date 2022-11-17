@@ -156,11 +156,11 @@ public class RecommendService {
             for (Integer menuId : similarList){
                MenuEntity menuEntity = menuRepository.findByMenuId(menuId);
                StoreEntity storeEntity = storeRepository.findByMenuId(menuId);
-               MenuImgEntity menuImgEntity = menuImgRepository.findByMenuId(menuId);
+               MenuImgEntity menuImgEntity = menuImgRepository.findTop1ByMenuId(menuId);
                RecommendDTO recommendDTO = RecommendDTO.builder()
                        .menuName(menuEntity.getMenuName())
                        .menuId(menuId)
-                       //.menuPic(menuImgEntity.getPath())
+                       .menuPic("http://localhost:8080/images/menu/" + menuImgEntity.getPath())
                        .storeId(storeEntity.getStoreId())
                        .state(0)
                        .storeName(storeEntity.getName()).build();
@@ -292,11 +292,11 @@ public class RecommendService {
             for (Integer menuId : similarityMenuList){
                 MenuEntity menuEntity = menuRepository.findByMenuId(menuId);
                 StoreEntity storeEntity = storeRepository.findByMenuId(menuId);
-                MenuImgEntity menuImgEntity = menuImgRepository.findByMenuId(menuId);
+                MenuImgEntity menuImgEntity = menuImgRepository.findTop1ByMenuId(menuId);
                 RecommendDTO recommendDTO = RecommendDTO.builder()
                         .menuName(menuEntity.getMenuName())
                         .menuId(menuId)
-                        //.menuPic(menuImgEntity.getPath())
+                        .menuPic("http://localhost:8080/images/menu/" + menuImgEntity.getPath())
                         .storeId(storeEntity.getStoreId())
                         .state(0)
                         .storeName(storeEntity.getName()).build();

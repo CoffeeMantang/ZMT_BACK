@@ -20,7 +20,7 @@ public class SearchEntity {
     @Column(name = "search_id")
     private int searchId;
     @Column(name = "search")
-    private int search; // 검색한 키워드
+    private String search; // 검색한 키워드
     @Column(name = "member_id")
     @JoinColumn(name = "member_id")
     private int memberId; // 검색한 사람

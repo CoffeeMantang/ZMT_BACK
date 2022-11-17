@@ -29,4 +29,11 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Integer> {
     // 멤버아이디와 리뷰아이디로 검색
     Long countByMemberIdAndReviewId(int memberId, int reviewId);
 
+    // 평균리뷰점수 가져오기
+    @Query(value = "SELECT AVG(score) FROM review WHERE store_id = :storeId", nativeQuery = true)
+    Optional<Double> findReviewScoreByStoreId(@Param("storeId") String storeId);
+
+    // 가게의 리뷰 갯수 가져오기
+    Long countByStoreId(String storeId);
+
 }

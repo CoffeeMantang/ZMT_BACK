@@ -4,6 +4,7 @@ import com.coffeemantang.ZMT_BACK.dto.*;
 import com.coffeemantang.ZMT_BACK.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,8 @@ public class NonmemberController {
     private final BoardService boardService;
 
     private final StoreInfoService storeInfoService;
+    @Autowired
+    ReviewService reviewService;
 
     // 가게 목록
     @PostMapping("/store/list")
@@ -127,6 +130,37 @@ public class NonmemberController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
 
+    }
+
+    // 가게 페이지 불러오기
+    @GetMapping(value = "/storeview/{storeId}")
+    public ResponseEntity<?> viewStore(@PathVariable("storeId") String storeId) throws Exception{
+        try{
+            // 1. 가게정보가져오기
+            StoreDTO storeDTO = storeService.nonLoginStore(storeId);
+            // 2. 리턴
+            return ResponseEntity.ok().body(storeDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 가게 리뷰 보기(페이징) -> 추후 로그인 없이 볼 수 있는 path로 이동시킴
+    @GetMapping("/review")
+    public ResponseEntity<?> storeReview(@RequestParam(value = "storeId") String storeId, @PageableDefault(size = 10) Pageable pageable) throws Exception{
+        try{
+            List<ReviewDTO> listReview = reviewService.getStoreReviewList(storeId, pageable);
+            if(listReview.isEmpty()){ // 리뷰가 없을때
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }else{
+                return ResponseEntity.ok().body(listReview);
+            }
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
     }
 
 }

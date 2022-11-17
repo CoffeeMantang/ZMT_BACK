@@ -1,8 +1,13 @@
 package com.coffeemantang.ZMT_BACK.service;
 
+import com.coffeemantang.ZMT_BACK.dto.MemberRocationDTO;
+import com.coffeemantang.ZMT_BACK.dto.SearchDTO;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
+import com.coffeemantang.ZMT_BACK.model.MemberRocationEntity;
+import com.coffeemantang.ZMT_BACK.model.SearchEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
 import com.coffeemantang.ZMT_BACK.persistence.MemberRocationRepository;
+import com.coffeemantang.ZMT_BACK.persistence.SearchRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.annotations.DynamicUpdate;
@@ -12,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Member;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -22,6 +29,8 @@ public class MemberService {
     private MemberRepository memberRepository;
     @Autowired
     private MemberRocationRepository memberRocationRepository;
+    @Autowired
+    private SearchRepository searchRepository;
 
     // 새 계정 생성 - 이메일 중복 검사
     public MemberEntity create(final MemberEntity memberEntity){
@@ -265,6 +274,90 @@ public class MemberService {
             log.warn("MemberService.getMainAddress() : memberId 값이 이상해요");
             throw new RuntimeException("MemberService.getMainAddress() : memberId 값이 이상해요");
         }
-        return memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1);
+        return memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1).getAddress1();
+    }
+
+    // 모든 주소 가져오기
+    public List<MemberRocationDTO> getAllAddress(final int memberId){
+        try{
+            if(memberId < 1){
+                log.warn("MemberService.getAllAddress() : memberId 값이 이상해요");
+                throw new RuntimeException("MemberService.getAllAddress() : memberId 값이 이상해요");
+            }
+            List<MemberRocationDTO> listMrDTO = new ArrayList<>(); // 리턴할 리스트
+            // 1. 모든 주소를 가져온다.
+            List<MemberRocationEntity> mrList = memberRocationRepository.findAllByMemberId(memberId);
+            // 2. 대표주소를 가져와 리턴할 리스트에 넣는다.
+            for(MemberRocationEntity entity : mrList){
+                if(entity.getState() == 1){
+                    MemberRocationDTO dto = MemberRocationDTO.builder().address1(entity.getAddress1())
+                            .address2(entity.getAddress2())
+                            .nickname(entity.getNickname())
+                            .memberrocationId(entity.getMemberrocationId())
+                            .state(1).build();
+                    listMrDTO.add(dto);
+                }
+            }
+            // 3. 나머지를 리스트에 넣는다.
+            for(MemberRocationEntity entity : mrList){
+                if(entity.getState() != 1){
+                    MemberRocationDTO dto = MemberRocationDTO.builder().address1(entity.getAddress1())
+                            .address2(entity.getAddress2())
+                            .nickname(entity.getNickname())
+                            .memberrocationId(entity.getMemberrocationId())
+                            .state(1).build();
+                    listMrDTO.add(dto);
+                }
+            }
+            // 4. 리턴
+            return listMrDTO;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 주소추가하기
+    public void newAddress(final int memberId, final MemberRocationDTO mrDTO) throws Exception{
+        try{
+            // 1. 들어온 rocation으로 Entity 만들기
+            MemberRocationEntity mrEntity = MemberRocationEntity.builder()
+                    .address1(mrDTO.getAddress1())
+                    .address2(mrDTO.getAddress2())
+                    .addressX(mrDTO.getAddressX())
+                    .addressY(mrDTO.getAddressY())
+                    .memberId(memberId)
+                    .state(0).build();
+            // 2. 닉네임이 넘어왔는지 체크하고 안넘어왔으면 address1을 닉네임으로
+            if(mrDTO.getNickname() == "" || mrDTO.getNickname() == null){
+                mrEntity.setNickname(mrDTO.getAddress1());
+            }else{
+                mrEntity.setNickname(mrDTO.getNickname());
+            }
+            // 3. 저장
+            memberRocationRepository.save(mrEntity);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 최근검색어 가져오기(top10)
+    public List<SearchDTO> getSearchList(int memberId) throws Exception{
+        try{
+            List<SearchEntity> entities = searchRepository.findTop10ByMemberIdOrderByTimeDesc(memberId);
+            List<SearchDTO> resultList = new ArrayList<>();
+            for(SearchEntity entity : entities){
+                SearchDTO dto = SearchDTO.builder().searchId(entity.getSearchId())
+                        .search(entity.getSearch())
+                        .time(entity.getTime())
+                        .build();
+                resultList.add(dto);
+            }
+            return resultList;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }

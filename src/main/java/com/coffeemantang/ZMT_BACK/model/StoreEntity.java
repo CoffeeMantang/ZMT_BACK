@@ -44,4 +44,6 @@ public class StoreEntity {
     private double addressY;
     @Column(name = "hits")
     private int hits; // 가게조회수
+    @Column(name = "min")
+    private int min;
 }

@@ -1,6 +1,7 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
 import com.coffeemantang.ZMT_BACK.dto.RecommendDTO;
+import com.coffeemantang.ZMT_BACK.dto.RecommendDTOList;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
 import com.coffeemantang.ZMT_BACK.service.RecommendService;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +42,10 @@ public class RecommendController {
 
             // 3. 두가지 합치기
             resultList.addAll(resultList2);
+            RecommendDTOList returnDTO = RecommendDTOList.builder().recommendDTOs(resultList).build();
 
             // 4. 리턴
-            return ResponseEntity.ok().body(resultList);
+            return ResponseEntity.ok().body(returnDTO);
 
         }catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();

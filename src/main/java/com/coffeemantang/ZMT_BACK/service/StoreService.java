@@ -1,7 +1,10 @@
 package com.coffeemantang.ZMT_BACK.service;
 
+import com.coffeemantang.ZMT_BACK.dto.ImageDTO;
+import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
+import com.coffeemantang.ZMT_BACK.model.MenuImgEntity;
 import com.coffeemantang.ZMT_BACK.model.OptionEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import com.coffeemantang.ZMT_BACK.persistence.*;
@@ -14,6 +17,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,6 +31,12 @@ public class StoreService {
     private final MemberRepository memberRepository;
 
     private final BookmarkRepository bookmarkRepository;
+    @Autowired
+    private final MenuRepository menuRepository;
+    @Autowired
+    private final MenuImgRepository menuImgRepository;
+    @Autowired
+    private final ReviewRepository reviewRepository;
 
     // 가게 생성
     public StoreEntity create(final StoreEntity storeEntity){
@@ -100,5 +110,63 @@ public class StoreService {
 
         return newStoreDTO;
 
+    }
+
+    // 가게페이지 정보 가져오기(로그인 없이)
+    public StoreDTO nonLoginStore(final String storeId) throws Exception{
+        try{
+            StoreEntity storeEntity = storeRepository.findByStoreId(storeId);
+            List<MenuEntity> menuList = menuRepository.selectMenuOrderByMenuNumber(storeId, 2);
+            List<MenuDTO> menuDTOList = new ArrayList<>();
+            List<ImageDTO> imageList = new ArrayList<>();
+            ImageDTO imageDTO = ImageDTO.builder().build();
+            if(storeEntity.getThumb() != null){
+                imageDTO.setImage("http://localhost:8080/images/store/" + storeEntity.getThumb());
+            }
+            imageList.add(imageDTO);
+
+            for(MenuEntity menuEntity : menuList) {
+                // 1. 메뉴의 첫번째 이미지 가져오기
+                MenuImgEntity menuImgEntity = null;
+                menuImgEntity = menuImgRepository.findTop1ByMenuId(menuEntity.getMenuId());
+                // 2. StoreDTO에 MenuDTO List 넣기
+                MenuDTO menuDTO = MenuDTO.builder().menuId(menuEntity.getMenuId())
+                        .menuName(menuEntity.getMenuName())
+                        .notice(menuEntity.getNotice())
+                        .category(menuEntity.getCategory())
+                        .price(menuEntity.getPrice()).build();
+                if (menuImgEntity != null) {
+                    menuDTO.setMenuPic("http://localhost:8080/images/menu/" + menuImgEntity.getPath());
+                }
+                menuDTOList.add(menuDTO);
+                if (menuImgEntity != null) {
+                    ImageDTO tempImageDTO = ImageDTO.builder().image("http://localhost:8080/images/menu/" + menuImgEntity.getPath()).build();
+                    imageList.add(tempImageDTO);
+                }
+            }
+            StoreDTO storeDTO = StoreDTO.builder()
+                    .storeId(storeId)
+                    .name(storeEntity.getName())
+                    .images(imageList)
+                    .menuList(menuDTOList)
+                    .min(storeEntity.getMin())
+                    .state(storeEntity.getState()).build();
+
+            // 3. 평균리뷰점수 가져와서 추가
+            Optional<Double> oReviewScore = reviewRepository.findReviewScoreByStoreId(storeId);
+            if(oReviewScore.isPresent()){
+                storeDTO.setScore(Math.round((oReviewScore.get()*10)/10.0)); //소숫점 두번째에서 반올림
+            }else{
+                storeDTO.setScore(0.0); //리뷰가 없으면 0으로
+            }
+            // 4. 리뷰갯수 가져와서 추가
+            Long reviewCount = reviewRepository.countByStoreId(storeId);
+            storeDTO.setReviewCount(reviewCount);
+
+            return storeDTO;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
     }
 }

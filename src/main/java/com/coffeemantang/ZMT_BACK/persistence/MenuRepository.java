@@ -24,7 +24,7 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
     int selectMemberIdByMenuId(@Param("menuId") int menuId);
 
     // 가게 아이디로 메뉴 번호로 정렬 된 MenuEntity 가져오기
-    @Query(value = "SELECT * FROM menu WHERE store_id = :storeId AND state < :state order by menu_number", nativeQuery = true)
+    @Query(value = "SELECT * FROM menu WHERE store_id = :storeId AND state < :state order by category, menu_number", nativeQuery = true)
     List<MenuEntity> selectMenuOrderByMenuNumber(@Param("storeId") String storeId, @Param("state") int state);
 
     // 가게 아이디, 메뉴 번호로 state가 2보다 작은 MenuEntity 가져오기
