@@ -43,6 +43,10 @@ public class MenuDTO {
 
     private List<OptionDTO> optionDTOList;
 
+    private int count;
+
+    private int total;
+
     public MenuDTO(final MenuEntity menuEntity) {
 
         this.menuId = menuEntity.getMenuId();
@@ -54,6 +58,13 @@ public class MenuDTO {
         this.tag = menuEntity.getTag();
         this.state = menuEntity.getState();
 
+    }
+
+    public MenuDTO(String menuName, int price, int count, int total) {
+        this.menuName = menuName;
+        this.price = price;
+        this.count = count;
+        this.total = total;
     }
 
     public static MenuEntity toEntity(final MenuDTO menuDTO) {

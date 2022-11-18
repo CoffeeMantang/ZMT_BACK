@@ -1,6 +1,7 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
+import com.coffeemantang.ZMT_BACK.dto.StatsDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreInfoDTO;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 @Slf4j
 @RestController
@@ -142,4 +144,21 @@ public class StoreController {
 
     }
 
+    // 기간별 수익
+    @PostMapping("/stats")
+    public ResponseEntity<?> viewStats(@AuthenticationPrincipal String memberId, @RequestParam HashMap<String, String> map) {
+
+        try {
+            int type = Integer.parseInt(map.get("type"));
+            StatsDTO responseStatsDTO = new StatsDTO();
+            if (0 == type) { //수익만
+                responseStatsDTO = storeService.viewStats(Integer.parseInt(memberId), map);
+            }
+            return ResponseEntity.ok().body(responseStatsDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
+    }
 }

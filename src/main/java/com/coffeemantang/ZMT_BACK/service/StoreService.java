@@ -2,6 +2,7 @@ package com.coffeemantang.ZMT_BACK.service;
 
 import com.coffeemantang.ZMT_BACK.dto.ImageDTO;
 import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
+import com.coffeemantang.ZMT_BACK.dto.StatsDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import com.coffeemantang.ZMT_BACK.model.MenuImgEntity;
@@ -14,10 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,6 +30,8 @@ public class StoreService {
     private final MemberRepository memberRepository;
 
     private final BookmarkRepository bookmarkRepository;
+
+    private final OrderListRepository orderListRepository;
     @Autowired
     private final MenuRepository menuRepository;
     @Autowired
@@ -169,4 +170,72 @@ public class StoreService {
             throw new Exception(e.getMessage());
         }
     }
+
+    // 기간별 수익
+    public StatsDTO viewStats(int memberId, HashMap<String, String> map) {
+
+        if (memberId != storeRepository.selectMemberIdByStoreId(map.get("storeId"))) {
+            log.warn("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+        }
+
+        String year = map.get("year");
+        String month = map.get("month");
+        String day = map.get("day");
+
+        try {
+
+            StatsDTO statsDTO = new StatsDTO();
+            String storeId = map.get("storeId");
+            List<MenuDTO> menuDTOList = menuRepository.findByStoreId(storeId);
+            List<MenuDTO> statsMenuDTOList = new ArrayList<>();
+            int profit = 0;
+
+            if (0 == Integer.parseInt(month)) {
+
+                profit = orderListRepository.selectPriceByYear(2, storeId, year);
+
+                for (MenuDTO menuDTO : menuDTOList) {
+                    int count = orderListRepository.selectQuantityCountByYear(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year);
+                    int total = menuDTO.getPrice() * count;
+                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+                    statsMenuDTOList.add(statsMenuDTO);
+                }
+
+            } else if (0 == Integer.parseInt(day)) {
+
+                profit = orderListRepository.selectPriceByMonth(2, storeId, year + "-" + month);
+
+                for (MenuDTO menuDTO : menuDTOList) {
+                    int count = orderListRepository.selectQuantityCountByMonth(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year + "-" + month);
+                    int total = menuDTO.getPrice() * count;
+                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+                    statsMenuDTOList.add(statsMenuDTO);
+                }
+
+            } else if (0 < Integer.parseInt(day)) {
+
+                profit = orderListRepository.selectPriceByDay(2, storeId, year + "-" + month + "-" + day);
+
+                for (MenuDTO menuDTO : menuDTOList) {
+                    int count = orderListRepository.selectQuantityCountByDay(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year + "-" + month + "-" + day);
+                    int total = menuDTO.getPrice() * count;
+                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+                    statsMenuDTOList.add(statsMenuDTO);
+                }
+
+            }
+
+            Comparator<MenuDTO> comparingMenuDTO = Comparator.comparing(MenuDTO::getCount, Comparator.reverseOrder());
+            List<MenuDTO> newStatsMenuDTOList = statsMenuDTOList.stream().sorted(comparingMenuDTO).collect(Collectors.toList());
+            statsDTO.setMenuDTOList(newStatsMenuDTOList);
+            statsDTO.setProfit(profit);
+
+            return statsDTO;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("기간별 수익을 가져오는 중 에러 발생");
+        }
+    }
+
 }
