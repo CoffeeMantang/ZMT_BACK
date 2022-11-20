@@ -3,15 +3,24 @@ package com.coffeemantang.ZMT_BACK.service;
 import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
+import com.coffeemantang.ZMT_BACK.model.MenuImgEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
+import com.coffeemantang.ZMT_BACK.persistence.MenuImgRepository;
 import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
 import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,12 +34,14 @@ public class MenuService {
 
     private final StoreRepository storeRepository;
 
+    private final MenuImgRepository menuImgRepository;
+
     //메뉴 추가
-    public MenuEntity addMenu(final MenuEntity menuEntity, int memberId) {
+    public void addMenu(MenuDTO menuDTO, int memberId) throws IOException {
 
-        int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuEntity.getMenuId());
+        int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuDTO.getMenuId());
 
-        if (menuEntity == null || menuEntity.getStoreId() == null) {
+        if (menuDTO == null || menuDTO.getStoreId() == null) {
             log.warn("MenuService.addMenu() : menuEntity에 내용이 부족해요");
             throw new RuntimeException("MenuService.addMenu() : menuEntity에 내용이 부족해요");
         }
@@ -39,8 +50,76 @@ public class MenuService {
             throw new RuntimeException("MenuService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
         }
 
-        return menuRepository.save(menuEntity);
+        MenuEntity menuEntity = new MenuEntity();
+        menuEntity.setStoreId(menuDTO.getStoreId());
+        menuEntity.setMenuName(menuDTO.getMenuName());
+        menuEntity.setPrice(menuDTO.getPrice());
+        menuEntity.setNotice(menuDTO.getNotice());
+        menuEntity.setCategory(menuDTO.getCategory());
+        menuEntity.setMenuNumber(createMenuNumber(menuDTO.getStoreId()));
+        menuEntity.setState(0);
+        menuEntity.setTag(menuDTO.getTag());
 
+        int menuId = menuRepository.save(menuEntity).getMenuId();
+
+        List<MultipartFile> multipartFiles = menuDTO.getFiles();
+
+        List<MenuImgEntity> fileList = new ArrayList<>();
+
+        String current_date = null;
+        if(!CollectionUtils.isEmpty(multipartFiles)) {
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            current_date = now.format(dateTimeFormatter);
+
+            String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
+
+            String path = "images" + File.separator + current_date;
+            File file = new File(path);
+
+            if (!file.exists()) {
+                boolean wasSuccessful = file.mkdirs();
+
+                if(!wasSuccessful) {
+                    log.warn("file : was not successful");
+                }
+            }
+
+            for (MultipartFile multipartFile : multipartFiles) {
+                String originalFileExtension;
+                String contentType = multipartFile.getContentType();
+
+                if (ObjectUtils.isEmpty(contentType)) {
+                    break;
+                } else {
+                    if (contentType.contains("image/jpeg")) {
+                        originalFileExtension = ".jpg";
+                    } else if (contentType.contains("images/png")) {
+                        originalFileExtension = ".png";
+                    } else {
+                        break;
+                    }
+                }
+
+                String new_file_name = System.nanoTime() + originalFileExtension;
+
+                MenuImgEntity menuImgEntity = MenuImgEntity.builder()
+                        .menuId(menuId)
+                        .path(path + file.separator + new_file_name)
+                        .build();
+
+                fileList.add(menuImgEntity);
+
+                file = new File(absolutePath + path + File.separator + new_file_name);
+                multipartFile.transferTo(file);
+
+                file.setWritable(true);
+                file.setReadable(true);
+
+                menuImgRepository.save(menuImgEntity);
+
+            }
+        }
     }
 
     // 메뉴 수정

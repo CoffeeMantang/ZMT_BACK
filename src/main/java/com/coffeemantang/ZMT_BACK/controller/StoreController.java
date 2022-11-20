@@ -31,32 +31,8 @@ public class StoreController {
     @PostMapping("/create")
     public ResponseEntity<?> createStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO){
         try {
-            // StoreDTO를 StoreEntity로 변환
-            StoreEntity tempStoreEntity = StoreDTO.toEntity(storeDTO);
-            // 생성 당시에는 id가 없어야 하기 때문에 null로 초기화
-            tempStoreEntity.setStoreId(null);
-            // 생성일 현재시간을 초기화
-            tempStoreEntity.setJoinDay(LocalDateTime.now());
-            // AuthenticationPrincipal에서 넘어온 memberId set
-            tempStoreEntity.setMemberId(Integer.parseInt(memberId));
-            // 가게의 상태 초기화
-            tempStoreEntity.setState(0);
-            // StoreService를 이용해 StoreEntity 생성
-            StoreEntity storeEntity = storeService.create(tempStoreEntity);
-            // 리턴할 Store DTO 초기화
-            StoreDTO responseStoreDTO = StoreDTO.builder()
-                    .storeId(storeEntity.getStoreId())
-                    .memberId(storeEntity.getMemberId())
-                    .name(storeEntity.getName())
-                    .joinDay(storeEntity.getJoinDay())
-                    .category(storeEntity.getCategory())
-                    .address1(storeEntity.getAddress1())
-                    .address2(storeEntity.getAddress2())
-                    .addressX(storeEntity.getAddressX())
-                    .addressY(storeEntity.getAddressY())
-                    .build();
-            // 응답
-            return ResponseEntity.ok().body(responseStoreDTO);
+            storeService.create(Integer.parseInt(memberId), storeDTO);
+            return ResponseEntity.ok().body("ok");
         }catch (Exception e){
             // 예외 발생 시 error에 e.getMessage() 넣어 리턴
             ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();
