@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -42,6 +43,12 @@ public class MenuDTO {
     private int state;
 
     private List<OptionDTO> optionDTOList;
+
+    private List<MultipartFile> files;
+
+    private List<String> menuFiles;
+
+    private List<String> images;
 
     private int count;
 
