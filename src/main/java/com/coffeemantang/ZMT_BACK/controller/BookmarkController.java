@@ -7,6 +7,8 @@ import com.coffeemantang.ZMT_BACK.model.BookmarkEntity;
 import com.coffeemantang.ZMT_BACK.service.BookmarkService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -51,12 +53,12 @@ public class BookmarkController {
     }
 
     // 즐겨찾기 목록
-    @PostMapping("/list")
-    public List<BookmarkDTO> viewBookmarkList(@AuthenticationPrincipal String memberId) {
+    @GetMapping("/list")
+    public ResponseEntity<?> viewBookmarkList(@AuthenticationPrincipal String memberId, @PageableDefault(size = 10) Pageable pageable) {
 
         try {
-            List<BookmarkDTO> bookmarkDTOList = bookmarkService.viewBookmarkList(Integer.parseInt(memberId));
-            return bookmarkDTOList;
+            BookmarkDTO bookmarkDTO = bookmarkService.viewBookmarkList(Integer.parseInt(memberId), pageable);
+            return ResponseEntity.ok().body(bookmarkDTO);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("즐겨찾기 목록을 가져오는 도중 에러 발생");

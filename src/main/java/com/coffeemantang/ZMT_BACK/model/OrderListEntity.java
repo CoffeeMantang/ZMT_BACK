@@ -56,7 +56,7 @@ public class OrderListEntity {
     private int weather; // 취소사유
 
     @Column(name = "charge")
-    private int charge;
+    private int charge; // 배달비
 
     @Column(name = "memberrocation_id")
     @JoinColumn(name = "memberrocation_id")

@@ -34,5 +34,7 @@ public class OrderMenuEntity {
 
     @Column(name = "quantity")
     private int quantity;
+    @Column(name = "name")
+    private String name;
 
 }

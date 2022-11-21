@@ -22,6 +22,7 @@ public class StoreDTO {
 
     @NotBlank
     private String storeId;
+    private List<ReviewDTO> reviewList;
 
     private int min; // 최소주문금액
     

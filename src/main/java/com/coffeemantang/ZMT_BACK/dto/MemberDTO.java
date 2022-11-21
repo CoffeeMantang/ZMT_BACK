@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -32,4 +33,5 @@ public class MemberDTO {
     private String question;
     private String answer;
     private String address;
+    private List<ReviewDTO> reviewList;
 }

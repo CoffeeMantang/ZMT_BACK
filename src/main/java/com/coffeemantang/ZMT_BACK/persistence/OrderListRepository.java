@@ -1,6 +1,8 @@
 package com.coffeemantang.ZMT_BACK.persistence;
 
 import com.coffeemantang.ZMT_BACK.model.OrderListEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -56,5 +58,10 @@ public interface OrderListRepository extends JpaRepository<OrderListEntity, Stri
     int selectQuantityCountByDay(@Param("state") int state, @Param("storeId") String storeId,
                                       @Param("menuId") int menuId, @Param("Ymd") String Ymd);
 
+
+    long countByMemberIdAndState(int memberId, int state);
+
+    // 해당 멤버의 주문내역 모두 가져오기
+    Page<OrderListEntity> findAllByMemberId(int memberId, Pageable pageable);
 
 }

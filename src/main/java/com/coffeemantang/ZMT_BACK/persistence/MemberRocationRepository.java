@@ -15,6 +15,8 @@ public interface MemberRocationRepository extends JpaRepository<MemberRocationEn
 
     MemberRocationEntity findByMemberId(int memberId);
 
+    List<MemberRocationEntity> findByMemberIdAndState(int memberId, int state);
+
     // memberId로 state가 1인 memberrocationId 가져오기
     @Query(value = "SELECT memberrocation_id FROM memberrocation WHERE member_id = :memberId AND state = 1", nativeQuery = true)
     int selectMemberrocationIdByMemberIdAndState(@Param("memberId") int memberId);
@@ -32,5 +34,8 @@ public interface MemberRocationRepository extends JpaRepository<MemberRocationEn
 
     // 아이디로 모든 주소 가져오기
     List<MemberRocationEntity> findAllByMemberId(int memberId);
+
+    // memberrcationID로 가져오기
+    MemberRocationEntity findByMemberrocationId(int memberrocationId);
 
 }

@@ -3,6 +3,7 @@ package com.coffeemantang.ZMT_BACK.service;
 import com.coffeemantang.ZMT_BACK.dto.BoardDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreInfoDTO;
+import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreInfoEntity;
 import com.coffeemantang.ZMT_BACK.persistence.StoreInfoRepository;
 import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
@@ -113,12 +114,27 @@ public class StoreInfoService {
 
 
     // 가게 정보 보기
-    public StoreInfoDTO viewStoreInfo(StoreDTO storeDTO) {
+    public StoreInfoDTO viewStoreInfo(String storeId) throws Exception{
 
-        StoreInfoEntity storeInfoEntity = storeInfoRepository.findByStoreId(storeDTO.getStoreId());
-        StoreInfoDTO storeInfoDTO = new StoreInfoDTO(storeInfoEntity);
 
-        return storeInfoDTO;
+        try{
+            StoreInfoEntity storeInfoEntity = storeInfoRepository.findAllByStoreId(storeId);
+            // 가게정보로 storeEntity 가져오기
+            StoreEntity storeEntity = storeRepository.findByStoreId(storeId);
+
+            StoreInfoDTO storeInfoDTO = new StoreInfoDTO(storeInfoEntity);
+
+            // 나머지정보 추가
+            storeInfoDTO.setAddress1(storeEntity.getAddress1());
+            storeInfoDTO.setAddress2(storeEntity.getAddress2());
+            storeInfoDTO.setStoreName(storeEntity.getName());
+            storeInfoDTO.setThumb("http://localhost:8080/images/store/" + storeEntity.getThumb());
+
+            return storeInfoDTO;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
 
     }
 }

@@ -4,16 +4,14 @@ import com.coffeemantang.ZMT_BACK.dto.ImageDTO;
 import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.dto.StatsDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
-import com.coffeemantang.ZMT_BACK.model.MenuEntity;
-import com.coffeemantang.ZMT_BACK.model.MenuImgEntity;
-import com.coffeemantang.ZMT_BACK.model.OptionEntity;
-import com.coffeemantang.ZMT_BACK.model.StoreEntity;
+import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,14 +35,18 @@ public class StoreService {
     private final MemberRepository memberRepository;
 
     private final BookmarkRepository bookmarkRepository;
-
-    private final OrderListRepository orderListRepository;
     @Autowired
     private final MenuRepository menuRepository;
     @Autowired
     private final MenuImgRepository menuImgRepository;
     @Autowired
     private final ReviewRepository reviewRepository;
+    @Autowired
+    private final MemberRocationRepository memberRocationRepository;
+    @Autowired
+    private final ChargeRepository chargeRepository;
+    @Autowired
+    private final OrderListRepository orderListRepository;
 
     // 가게 생성
     public void create(int memberId, StoreDTO storeDTO) throws IOException {
@@ -239,6 +241,277 @@ public class StoreService {
         }
     }
 
+    // 가게이름으로 검색하기 - paging
+    public List<StoreDTO> getSearchResult(final String keyword, final int page, final String sort, String address) throws Exception{
+        try{
+            List<StoreEntity> entities = new ArrayList<>();
+            // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
+            switch (sort){
+                case("orderCount"):// 주문수 정렬
+                    entities = storeRepository.findByNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
+                    break;
+                case("reviewScore"):
+                    // 리뷰평점 정렬
+                    entities = storeRepository.findByNameOrderByReviewScore(10, ((page-1)*10), address, keyword);
+                    break;
+                case("charge"): // 배달팁 낮은순
+                    break;
+                case("distance"): // 거리순
+                    break;
+                default: // 기본값은 주문순으로
+                    entities = storeRepository.findByNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
+            }
+            List<StoreDTO> dtos = new ArrayList<>();
+            // 2. DTO list로 변환
+            for(StoreEntity entity : entities){
+                // 2-1. 리뷰 평점 가져오기
+                Optional<Double> score = reviewRepository.findReviewScoreByStoreId(entity.getStoreId());
+                StoreDTO dto = StoreDTO.builder().storeId(entity.getStoreId())
+                        .state(entity.getState()).name(entity.getName())
+                        .thumb(entity.getThumb()).build();
+                if(score.isPresent()){
+                    dto.setScore(score.get());
+                }
+                dtos.add(dto);
+            }
+            return dtos;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    // 가게이름으로 검색하기 - paging
+    public List<StoreDTO> getSearchResultforMember(final String keyword, final int page, final String sort, final int memberId) throws Exception{
+        try{
+            // 멤버아이디로 주소가져오기
+            MemberRocationEntity memberRocationEntity = memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1); //대표주소 가져옴
+            String address = memberRocationEntity.getAddress1();
+            List<StoreEntity> entities = new ArrayList<>();
+            // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
+            switch (sort){
+                case("orderCount"):// 주문수 정렬
+                    entities = storeRepository.findByNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
+                    break;
+                case("reviewScore"):
+                    // 리뷰평점 정렬
+                    entities = storeRepository.findByNameOrderByReviewScore(10, ((page-1)*10), address, keyword);
+                    break;
+                case("charge"): // 배달팁 낮은순
+                    break;
+                case("distance"): // 거리순
+                    break;
+                default: // 기본값은 주문순으로
+                    entities = storeRepository.findByNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
+            }
+            List<StoreDTO> dtos = new ArrayList<>();
+            // 2. DTO list로 변환
+            for(StoreEntity entity : entities){
+                // 2-1. 리뷰 평점 가져오기
+                Optional<Double> score = reviewRepository.findReviewScoreByStoreId(entity.getStoreId());
+                StoreDTO dto = StoreDTO.builder().storeId(entity.getStoreId())
+                        .state(entity.getState()).name(entity.getName())
+                        .thumb(entity.getThumb()).build();
+                if(score.isPresent()){
+                    dto.setScore(score.get());
+                }
+                dtos.add(dto);
+            }
+            return dtos;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    // 메뉴명으로 검색하기 = nonLogin
+    public List<StoreDTO> getSearchByMenuName(final String keyword, final int page, final String sort, final String address) throws Exception{
+        try{
+            List<StoreEntity> entities = new ArrayList<>();
+            // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
+            switch (sort){
+                case("orderCount"):// 주문수 정렬
+                    entities = storeRepository.findByMenuNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
+                    break;
+                case("reviewScore"):
+                    // 리뷰평점 정렬
+                    break;
+                case("charge"): // 배달팁 낮은순
+                    break;
+                case("distance"): // 거리순
+                    break;
+                default: // 기본값은 주문순으로
+                    entities = storeRepository.findByMenuNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
+            }
+            List<StoreDTO> dtos = new ArrayList<>();
+            // 2. DTO list로 변환
+            for(StoreEntity entity : entities){
+                // 2-1. 리뷰 평점 가져오기
+                Optional<Double> score = reviewRepository.findReviewScoreByStoreId(entity.getStoreId());
+                StoreDTO dto = StoreDTO.builder().storeId(entity.getStoreId())
+                        .state(entity.getState()).name(entity.getName())
+                        .thumb("http://localhost:8080/images/store/" + entity.getThumb()).build();
+                if(score.isPresent()){
+                    dto.setScore(score.get());
+                }
+                dtos.add(dto);
+            }
+            return dtos;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    // 메뉴명으로 검색하기 - require login
+    public List<StoreDTO> getSearchByMenuNameForMember(final String keyword, final int page, final String sort, final int memberId) throws Exception{
+        try{
+            // 멤버아이디로 주소가져오기
+            MemberRocationEntity memberRocationEntity = memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1); //대표주소 가져옴
+            String address = memberRocationEntity.getAddress1();
+            List<StoreEntity> entities = new ArrayList<>();
+            // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
+            switch (sort){
+                case("orderCount"):// 주문수 정렬
+                    entities = storeRepository.findByMenuNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
+                    break;
+                case("reviewScore"):
+                    // 리뷰평점 정렬
+                    break;
+                case("charge"): // 배달팁 낮은순
+                    break;
+                case("distance"): // 거리순
+                    break;
+                default: // 기본값은 주문순으로
+                    entities = storeRepository.findByMenuNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
+            }
+            List<StoreDTO> dtos = new ArrayList<>();
+            // 2. DTO list로 변환
+            for(StoreEntity entity : entities){
+                // 2-1. 리뷰 평점 가져오기
+                Optional<Double> score = reviewRepository.findReviewScoreByStoreId(entity.getStoreId());
+                StoreDTO dto = StoreDTO.builder().storeId(entity.getStoreId())
+                        .state(entity.getState()).name(entity.getName())
+                        .thumb("http://localhost:8080/images/store/" + entity.getThumb()).build();
+                if(score.isPresent()){
+                    dto.setScore(score.get());
+                }
+                dtos.add(dto);
+            }
+            return dtos;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    // 회원아이디와 가게아이디로 배달비 찾기
+    public int findCharge(final int memberId, final String storeId) throws Exception{
+        try{
+            MemberRocationEntity mrEntity = memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1);
+            String[] address1 = mrEntity.getAddress1().split(" "); // 멤버의 address1 가져오기
+            String dong = null;
+            // 읍 면 동 가져오기
+            for(int i = 0 ; i < address1.length ; i++){
+                if(address1[i].endsWith("읍") || address1[i].endsWith("면") || address1[i].endsWith("동")){
+                    dong = address1[i];
+                    break;
+                }
+            }
+            // 가져온 읍면동으로 배달비 검색
+            List<ChargeEntity> charge = chargeRepository.findByDongContainingAndStoreId(dong, storeId);
+            if(charge.size() > 0){
+                return charge.get(0).getCharge();
+            }else{
+                return 99999; // 99999면 검색실패한경우 -> 배달불가능으로 표시해주면 됩니다.
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    // 카테고리로 검색하기(로그인 없이)
+    public List<StoreDTO> getCategorySearch(final int category, final int page, final String sort, String address) throws Exception{
+        try{
+            List<StoreEntity> entities = new ArrayList<>();
+            // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
+            switch (sort){
+                case("orderCount"):// 주문수 정렬
+                    entities = storeRepository.findByCategoryOrderByOrderCount(10, ((page-1)*10), address, category);
+                    break;
+                case("reviewScore"):
+                    // 리뷰평점 정렬
+                    break;
+                case("charge"): // 배달팁 낮은순
+                    break;
+                case("distance"): // 거리순
+                    break;
+                default: // 기본값은 주문순으로
+                    entities = storeRepository.findByCategoryOrderByOrderCount(10, ((page-1)*10), address, category);
+            }
+            List<StoreDTO> dtos = new ArrayList<>();
+            // 2. DTO list로 변환
+            for(StoreEntity entity : entities){
+                // 2-1. 리뷰 평점 가져오기
+                Optional<Double> score = reviewRepository.findReviewScoreByStoreId(entity.getStoreId());
+                StoreDTO dto = StoreDTO.builder().storeId(entity.getStoreId())
+                        .state(entity.getState()).name(entity.getName())
+                        .thumb("http://localhost:8080/images/store/" + entity.getThumb() ).build();
+                if(score.isPresent()){
+                    dto.setScore(score.get());
+                }
+                dtos.add(dto);
+            }
+            return dtos;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    // 카테고리로 검색하기(로그인시)
+    public List<StoreDTO> getCategorySearchWithLogin(final int category, final int page, final String sort, int memberId) throws Exception{
+        try{
+            // 멤버아이디로 주소가져오기
+            MemberRocationEntity memberRocationEntity = memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1); //대표주소 가져옴
+            String address = memberRocationEntity.getAddress1();
+            List<StoreEntity> entities = new ArrayList<>();
+            // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
+            switch (sort){
+                case("orderCount"):// 주문수 정렬
+                    entities = storeRepository.findByCategoryOrderByOrderCount(10, ((page-1)*10), address, category);
+                    break;
+                case("reviewScore"):
+                    // 리뷰평점 정렬
+                    break;
+                case("charge"): // 배달팁 낮은순
+                    break;
+                case("distance"): // 거리순
+                    break;
+                default: // 기본값은 주문순으로
+                    entities = storeRepository.findByCategoryOrderByOrderCount(10, ((page-1)*10), address, category);
+            }
+            List<StoreDTO> dtos = new ArrayList<>();
+            // 2. DTO list로 변환
+            for(StoreEntity entity : entities){
+                // 2-1. 리뷰 평점 가져오기
+                Optional<Double> score = reviewRepository.findReviewScoreByStoreId(entity.getStoreId());
+                StoreDTO dto = StoreDTO.builder().storeId(entity.getStoreId())
+                        .state(entity.getState()).name(entity.getName())
+                        .thumb("http://localhost:8080/images/store/" + entity.getThumb()).build();
+                if(score.isPresent()){
+                    dto.setScore(score.get());
+                }
+                dtos.add(dto);
+            }
+            return dtos;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new Exception(e.getMessage());
+        }
+    }
+
     // 기간별 수익
     public StatsDTO viewStats(int memberId, HashMap<String, String> map) {
 
@@ -305,5 +578,4 @@ public class StoreService {
             throw new RuntimeException("기간별 수익을 가져오는 중 에러 발생");
         }
     }
-
 }

@@ -30,5 +30,7 @@ public class OrderOptionEntity {
 
     @Column(name = "price")
     private int price;
+    @Column(name = "name")
+    private String name;
 
 }

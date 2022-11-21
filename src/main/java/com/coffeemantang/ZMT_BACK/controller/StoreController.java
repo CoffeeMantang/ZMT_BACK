@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -31,8 +33,22 @@ public class StoreController {
     @PostMapping("/create")
     public ResponseEntity<?> createStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO){
         try {
+            // StoreDTO를 StoreEntity로 변환
+            StoreEntity tempStoreEntity = StoreDTO.toEntity(storeDTO);
+            // 생성 당시에는 id가 없어야 하기 때문에 null로 초기화
+            tempStoreEntity.setStoreId(null);
+            // 생성일 현재시간을 초기화
+            tempStoreEntity.setJoinDay(LocalDateTime.now());
+            // AuthenticationPrincipal에서 넘어온 memberId set
+            tempStoreEntity.setMemberId(Integer.parseInt(memberId));
+            // 가게의 상태 초기화
+            tempStoreEntity.setState(0);
+            // StoreService를 이용해 StoreEntity 생성
             storeService.create(Integer.parseInt(memberId), storeDTO);
-            return ResponseEntity.ok().body("ok");
+            // 리턴할 Store DTO 초기화
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+            // 응답
+            return ResponseEntity.ok().body(responseDTO);
         }catch (Exception e){
             // 예외 발생 시 error에 e.getMessage() 넣어 리턴
             ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();
@@ -120,6 +136,74 @@ public class StoreController {
 
     }
 
+    // 가게이름으로 검색하기 - 로그인해야함
+    @GetMapping(value = "/searchResult/{keyword}")
+    public ResponseEntity<?> getSearchResult(@PathVariable("keyword") String keyword, @RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort,
+                                             @AuthenticationPrincipal String memberId) throws Exception {
+        try{
+            List<StoreDTO> result = storeService.getSearchResultforMember(keyword, page, sort, Integer.parseInt(memberId));
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
+            }
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 가게이름으로 검색하기 - 로그인해야함
+    @GetMapping(value = "/searchMenuResult/{keyword}")
+    public ResponseEntity<?> getMenuSearch(@PathVariable("keyword") String keyword, @RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort,
+                                             @AuthenticationPrincipal String memberId) throws Exception {
+        try{
+            List<StoreDTO> result = storeService.getSearchByMenuNameForMember(keyword, page, sort, Integer.parseInt(memberId));
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
+            }
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 로그인한 멤버 정보로 해당 가게의 배달비 가져오기
+    @GetMapping("/getStoreCharge")
+    public ResponseEntity<?> getCharge(@AuthenticationPrincipal String memberId, @RequestParam(value="storeId") String storeId) throws Exception{
+        try{
+            int charge =  storeService.findCharge(Integer.parseInt(memberId), storeId);
+            // ResponseDTO responseDTO = ResponseDTO.builder().error("ok").data(Arrays.asList(charge)).build();
+            return ResponseEntity.ok().body(charge);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+    // 카테고리로 검색하기(로그인 없이) - 여기페이지는 1부터 시작합니다.
+    @GetMapping(value = "/categorySearch/{category}")
+    public ResponseEntity<?> cagetorySearch(@AuthenticationPrincipal String memberId, @PathVariable("category") int category,@RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort) throws Exception{
+        try{
+            List<StoreDTO> result = storeService.getCategorySearchWithLogin(category, page, sort, Integer.parseInt(memberId));
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
+            }
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
     // 기간별 수익
     @PostMapping("/stats")
     public ResponseEntity<?> viewStats(@AuthenticationPrincipal String memberId, @RequestParam HashMap<String, String> map) {
@@ -137,4 +221,6 @@ public class StoreController {
         }
 
     }
+
+
 }

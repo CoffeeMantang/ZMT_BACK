@@ -41,44 +41,12 @@ public class RecommendService {
             // 2. 현재 회원이 설정한 주소 가져오기
             Optional<MemberRocationEntity> oMemberRocation = memberRocationRepository.findAllByMemberIdAndState(memberId, 1);
             // 3. 현재 회원이 설정한 주소에서 '시군구'와 '읍면동'을 가져옴
-            String[] address1 = oMemberRocation.get().getAddress1().split(" ");
-            String dong = null;
-            String si = null;
-
-            for(int i = 0; i < address1.length; i++) {
-                if (address1[i].endsWith("읍")) {
-                    dong = address1[i];
-                    break;
-                }
-                if (address1[i].endsWith("면")) {
-                    dong = address1[i];
-                    break;
-                }
-                if (address1[i].endsWith("동")) {
-                    dong = address1[i];
-                    break;
-                }
-            }
-            for(int i = 0; i < address1.length; i++) {
-                if (address1[i].endsWith("시")) {
-                    si = address1[i];
-                    break;
-                }
-                if (address1[i].endsWith("군")) {
-                    si = address1[i];
-                    break;
-                }
-                if (address1[i].endsWith("구")) {
-                    si = address1[i];
-                    break;
-                }
-            }
-            log.warn(si + dong);
+            String address1 = oMemberRocation.get().getAddress1();
             // 4. 현재 회원과 같은 동의 로케이션을 가진 멤버를 가져옴
-            List<Integer> memberList = memberRocationRepository.findMemberIdByAddress(si + " " + dong);
+            List<Integer> memberList = memberRocationRepository.findMemberIdByAddress(address1);
             log.warn("같은 동에 사는 사람들의 수: " + memberList.size());
             // 5. 현재 회원이 주문한 메뉴 리스트 가져오기(단, 현재 주소지에서 주문 가능한 메뉴)
-            List<Integer> menuList = orderMenuRepository.findMenuIdByMemberIdAndAddress(si + " " + dong, memberId);
+            List<Integer> menuList = orderMenuRepository.findMenuIdByMemberIdAndAddress(address1, memberId);
             // 6. 현재 회원의 Map 생성
             Map<CharSequence, Integer> curMemberMap = new HashMap<>(); // key: menuId, value: 주문횟수
             for(Integer menuId : menuList){
@@ -112,7 +80,7 @@ public class RecommendService {
             for(Integer otherMember : sortedMemberIdList){
                 // 9-1. 유사도가 높은 유저가 주문한 메뉴들 가져오기(단, 주문가능한 메뉴에 한정)
                 log.warn("9-1. 유사도가 높은 유저 " + otherMember);
-                List<Integer> otherMemberMenuList = orderMenuRepository.findMenuIdByMemberIdAndAddressSortDESC(si + " " + dong, otherMember);
+                List<Integer> otherMemberMenuList = orderMenuRepository.findMenuIdByMemberIdAndAddressSortDESC(address1, otherMember);
                 Map<Integer, Integer> otherMemberMap = new TreeMap<>(comparator); // K: menuId, V: orderCount
                 // 9-2. 유사도가 높은 유저가 주문한 메뉴들의 주문횟수 가져오기
                 log.warn("9-2");
@@ -186,40 +154,10 @@ public class RecommendService {
             MemberEntity memberEntity = memberRepository.findByMemberId(memberId);
             // 2. 현재 회원이 설정한 주소 가져오기
             Optional<MemberRocationEntity> oMemberRocation = memberRocationRepository.findAllByMemberIdAndState(memberId, 1);
-            // 3. 현재 회원이 설정한 주소에서 '시군구'와 '읍면동'을 가져옴
-            String[] address1 = oMemberRocation.get().getAddress1().split(" ");
-            String dong = null;
-            String si = null;
-            for(int i = 0; i < address1.length; i++) {
-                if (address1[i].endsWith("읍")) {
-                    dong = address1[i];
-                    break;
-                }
-                if (address1[i].endsWith("면")) {
-                    dong = address1[i];
-                    break;
-                }
-                if (address1[i].endsWith("동")) {
-                    dong = address1[i];
-                    break;
-                }
-            }
-            for(int i = 0; i < address1.length; i++) {
-                if (address1[i].endsWith("시")) {
-                    si = address1[i];
-                    break;
-                }
-                if (address1[i].endsWith("군")) {
-                    si = address1[i];
-                    break;
-                }
-                if (address1[i].endsWith("구")) {
-                    si = address1[i];
-                    break;
-                }
-            }
+            // 3. 현재 회원이 설정한 주소에서 address1 가져옴
+            String address1 = oMemberRocation.get().getAddress1();
             // 4. 현재 회원이 주문한 메뉴 리스트 가져오기(주문횟수 순으로 정렬, 주문횟수는 3회 이상)
-            List<Integer> menuList = orderMenuRepository.findMenuIdByMemberIdAndAddressSortDESC(si + " " + dong, memberId);
+            List<Integer> menuList = orderMenuRepository.findMenuIdByMemberIdAndAddressSortDESC(address1, memberId);
             Map<Integer, Map<CharSequence, Integer>> menuMap = new LinkedHashMap<>();
             String[] elements = ContentElement.getElements(); // 컨텐츠 기반 추천에 필요한 컬럼들 가져오기
             // 5. 현재 회원이 주문한 메뉴들의 태그 가져와서 맵 만들기
@@ -240,7 +178,7 @@ public class RecommendService {
                 menuMap.put(menuId, tempMap);
             }
             // 6. 현재 위치에서 주문 가능한 메뉴 모두 가져오기
-            List<MenuEntity> canMenuIdList = menuRepository.findMenuByAddress(si + " " + dong);
+            List<MenuEntity> canMenuIdList = menuRepository.findMenuByAddress(address1);
             // 7. 현재 위치에서 주문 가능한 메뉴들의 Map 만들기
             Map<Integer, Map<CharSequence, Integer>> canMenuMap = new HashMap<>();
             for(MenuEntity menuEntity : canMenuIdList){

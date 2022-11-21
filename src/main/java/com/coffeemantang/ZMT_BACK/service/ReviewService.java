@@ -2,6 +2,7 @@ package com.coffeemantang.ZMT_BACK.service;
 
 import com.coffeemantang.ZMT_BACK.dto.ReviewCommentDTO;
 import com.coffeemantang.ZMT_BACK.dto.ReviewDTO;
+import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,8 @@ public class ReviewService {
     private ReviewRecommendRepository reviewRecommendRepository;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private StoreRepository storeRepository;
 
     public void create(final int memberId, final ReviewDTO reviewDTO) throws Exception {
         // 리뷰 엔티티 생성
@@ -205,7 +208,7 @@ public class ReviewService {
     }
 
     // 해당 페이지의 가게 리뷰 리스트를 가져옴(10개씩)
-    public List<ReviewDTO> getStoreReviewList(final String storeId, final Pageable pageable) throws Exception{
+    public StoreDTO getStoreReviewList(final String storeId, final Pageable pageable) throws Exception{
         try{
             // 아이디 유효성 검사
             if(storeId == null || storeId.equals("")){
@@ -231,6 +234,9 @@ public class ReviewService {
                 List<ReviewImgEntity> listReviewImgEntity = reviewImgRepository.findByReviewId(list.getReviewId());
                 // 1. 해당 리뷰의 ReviewDTO 만들기
                 ReviewDTO reviewDTO = new ReviewDTO(list);
+                // 멤버의 닉네임 찾아서 넣기
+                MemberEntity nickname = memberRepository.findByMemberId(list.getMemberId());
+                reviewDTO.setNickname(nickname.getNickname());
                 // 2. 만든 ReviewDTO에 ReviewImgDTO 넣기
                 List<String> imageList = new ArrayList<>();
                 log.warn("listReviewImgEntity의 사이즈 " + listReviewImgEntity.size());
@@ -247,7 +253,19 @@ public class ReviewService {
                 listReviewDTO.add(reviewDTO);
             }
 
-            return listReviewDTO;
+            StoreEntity storeEntity = storeRepository.findByStoreId(storeId);
+
+            StoreDTO storeDTO = StoreDTO.builder().storeId(storeId).name(storeEntity.getName()).build();
+            // 가게 리뷰 갯수 가져오기
+            long count = reviewRepository.countByStoreId(storeId);
+            storeDTO.setReviewCount(count);
+            // 가게 리뷰 평점 가져오기
+            Optional<Double> avg = reviewRepository.findReviewScoreByStoreId(storeId);
+            if(avg.isPresent()){
+                storeDTO.setScore(avg.get());
+            }
+            storeDTO.setReviewList(listReviewDTO);
+            return storeDTO;
         }catch (Exception e){
             e.printStackTrace();
             throw new Exception(e.getMessage());
