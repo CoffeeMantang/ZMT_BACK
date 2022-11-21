@@ -366,5 +366,17 @@ public class MemberController {
         }
     }
 
-
+    // 대표주소 변경하기
+    @GetMapping("/setFirstAddress")
+    public ResponseEntity<?> setFirstAddress(@AuthenticationPrincipal String memberId, @RequestParam("id") int memberrocationId) throws Exception{
+        try{
+            // 추후에 memberId로 유효성 비교 넣어야 함
+            memberService.setFirstAddress(Integer.parseInt(memberId), memberrocationId);
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 }

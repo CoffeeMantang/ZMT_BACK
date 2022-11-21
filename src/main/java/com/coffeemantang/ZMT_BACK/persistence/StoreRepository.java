@@ -54,6 +54,14 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
             "INNER JOIN menu AS m ON m.store_id = s.store_id AND m.menu_name LIKE CONCAT('%',:keyword,'%') GROUP BY s.store_id ORDER BY cnt desc LIMIT :limit OFFSET :offset", nativeQuery = true)
     List<StoreEntity> findByMenuNameOrderByOrderCount(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword);
 
+    // 메뉴명으로 주문가능한 가게찾기 - 리뷰점수순 정렬
+    @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, COUNT(score) AS cnt FROM ( " +
+            "SELECT store.store_id, store.name, store.thumb,store.address2, store.address1, store.address_x, store.address_y, store.category, store.hits, store.joinday, store.state, store.min, store.member_id FROM store INNER JOIN charge ON " +
+            "store.store_id = charge.store_id AND charge.dong LIKE CONCAT('%',:address,'%') " +
+            ") AS s LEFT JOIN review AS r ON s.store_id = r.store_id " +
+            "INNER JOIN menu AS m ON m.store_id = s.store_id AND m.menu_name LIKE CONCAT('%',:keyword,'%') GROUP BY s.store_id ORDER BY cnt desc LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<StoreEntity> findByMenuNameOrderByReviewScore(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword);
+
     // 카테고리로 주문가능한 가게 찾기 - 주문순 정렬
     @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, COUNT(orderlist_id) AS cnt FROM ( " +
             "SELECT store.store_id, store.name, store.thumb,store.address2, store.address1, store.address_x, store.address_y, store.category, store.hits, store.joinday, store.state, store.min, store.member_id FROM store INNER JOIN charge ON " +

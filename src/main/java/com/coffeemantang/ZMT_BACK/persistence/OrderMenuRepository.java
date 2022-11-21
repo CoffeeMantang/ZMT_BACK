@@ -43,4 +43,6 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenuEntity, Long
             "INNER JOIN ordermenu AS om ON om.orderlist_id = ol.orderlist_id " +
             "WHERE ol.member_id = :memberId GROUP BY menu_id ORDER BY cnt DESC) AS asdf ", nativeQuery = true)
     public List<Integer> findMenuIdByMemberIdAndAddressSortDESC(@Param("address") String address, @Param("memberId") int memberId);
+
+    OrderMenuEntity findByOrdermenuId(long ordermenuId);
 }

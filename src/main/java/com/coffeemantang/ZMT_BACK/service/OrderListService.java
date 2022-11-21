@@ -5,6 +5,7 @@ import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -59,7 +60,7 @@ public class OrderListService {
                     price += optionRepository.selectPriceByOptionId(orderOptionDTO.getOptionId());
                 }
                 orderListEntity.setCharge(charge);
-                orderListEntity.setPrice((price * orderMenuDTO.getQuantity()) + charge);
+                orderListEntity.setPrice((price * orderMenuDTO.getQuantity()));
                 orderListEntity.setState(0);
                 orderListRepository.save(orderListEntity);
             } else {
@@ -73,7 +74,7 @@ public class OrderListService {
                     if(omEntity.getMenuId() == orderMenuDTO.getMenuId()){
                         // 3. 장바구니에 같은 메뉴가 있으면 옵션들을 검사
                         List<OrderOptionEntity> ooEntityList = orderOptionRepository.findAllByOrdermenuId(omEntity.getOrdermenuId());
-                        boolean check1 = false; // 검사용 변수
+                        boolean check1 = true; // 검사용 변수
                         for(OrderOptionEntity ooEntity : ooEntityList){
                             for(OrderOptionDTO ooDTO : orderMenuDTO.getOrderOptionDTOS()){
                                 if(ooDTO.getOptionId() == ooEntity.getOptionId()){
@@ -83,8 +84,11 @@ public class OrderListService {
                                     check1 = false; // 같은 내용이 없으면 false로
                                 }
                             }
+                            if(check1 == false){
+                                break;
+                            }
                         }
-                        boolean check2 = false;
+                        boolean check2 = true;
                         for(OrderOptionDTO ooDTO : orderMenuDTO.getOrderOptionDTOS()){
                             for(OrderOptionEntity ooEntity : ooEntityList){
                                 if(ooDTO.getOptionId() == ooEntity.getOptionId()){
@@ -93,6 +97,9 @@ public class OrderListService {
                                 }else{
                                     check2 = false; // 같은 내용이 없으면 false로
                                 }
+                            }
+                            if(check2 == false){
+                                break;
                             }
                         }
                         if(check2 == true && check1 == true){ // 서로 같은 메뉴이므로 수량과 가격만 증가시킴
@@ -107,9 +114,10 @@ public class OrderListService {
                             }
 
                             // 메뉴의 가격과 옵션가격합에 수량곱하기
-                            int tempPrice = (optionPriceSum + omEntity.getPrice()) * orderMenuDTO.getQuantity();
+                            int tempPrice = (optionPriceSum + omEntity.getPrice());
                             // 가격 변경
                             orderListEntity.setPrice(orderListEntity.getPrice() + tempPrice);
+
                             // 저장
                             orderListRepository.save(orderListEntity);
                             // 함수종료
@@ -197,9 +205,17 @@ public class OrderListService {
     }
 
     // 장바구니 메뉴 삭제
-    public void deleteMenuFromBasket(int memberId, OrderMenuDTO orderMenuDTO) {
+    public void deleteMenuFromBasket(int memberId, OrderMenuDTO omDTO) {
 
-        OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderMenuDTO.getOrderlistId());
+        OrderMenuEntity olEntity = orderMenuRepository.findByOrdermenuId(omDTO.getOrdermenuId());
+        OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(olEntity.getOrderlistId());
+        OrderMenuDTO orderMenuDTO = OrderMenuDTO.builder()
+                .ordermenuId(olEntity.getOrdermenuId())
+                .orderlistId(olEntity.getOrderlistId())
+                .menuId(olEntity.getMenuId())
+                .quantity(olEntity.getQuantity())
+                .price(olEntity.getPrice())
+                .build();
 
         if (memberId != orderListEntity.getMemberId()) {
             log.warn("OrderListService.deleteMenuFromBasket() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
@@ -268,6 +284,13 @@ public class OrderListService {
             List<MenuDTO> menuDTOS = menuEntityList.stream()
                     .map(MenuDTO::new)
                     .collect(Collectors.toList());
+            // 수량추가
+            for(int i = 0; i < orderMenuEntities.size(); i++){
+                int quantity = orderMenuEntities.get(i).getQuantity();
+                MenuDTO tempDTO = menuDTOS.get(i);
+                tempDTO.setQuantity(quantity);
+                menuDTOS.set(i, tempDTO);
+            }
             // 옵션 dto temp
             List<OptionDTO> odto = new ArrayList<OptionDTO>();
             // 오더옵션 엔티티 리스트 가져오기
@@ -413,6 +436,51 @@ public class OrderListService {
             }
             return orderListDTOList;
 
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 장바구니 가져오기
+    public OrderListDTO getBasket(final int memberId) throws Exception{
+        try{
+            // 1. 내 장바구니 가져오기
+            OrderListEntity orderListEntity = orderListRepository.findByMemberIdAndState(memberId, 0);
+            // 2. 가져온 장바구니로 DTO 만들기
+            OrderListDTO orderListDTO = OrderListDTO.builder().orderlistId(orderListEntity.getOrderlistId())
+                    .price(orderListEntity.getPrice())
+                    .charge(orderListEntity.getCharge()).storeId(orderListEntity.getStoreId()).build();
+            // 3. orderlistId로 ordermenuList 가져오기
+            List<OrderMenuEntity> orderMenuEntityList = orderMenuRepository.findAllByOrderlistId(orderListEntity.getOrderlistId());
+            // 4. dto로 변환
+            List<OrderMenuDTO> orderMenuDTOList = new ArrayList<>();
+            for(OrderMenuEntity omEntity : orderMenuEntityList){
+                MenuEntity menuEntity = menuRepository.findByMenuId(omEntity.getMenuId());
+                OrderMenuDTO orderMenuDTO = OrderMenuDTO.builder().menuId(omEntity.getMenuId())
+                        .price(menuEntity.getPrice())
+                        .quantity(omEntity.getQuantity()).menuPic("http://localhost:8080/images/menu/" + omEntity.getMenuId() + "_1.jpg")
+                        .ordermenuId(omEntity.getOrdermenuId())
+                        .name(menuEntity.getMenuName()).build();
+                // 5. orderoption 가져오기
+                List<OrderOptionEntity> orderOptionEntityList = orderOptionRepository.findAllByOrdermenuId(omEntity.getOrdermenuId());
+                List<OrderOptionDTO> orderOptionDTOList = new ArrayList<>();
+                for(OrderOptionEntity ooEntity : orderOptionEntityList){
+                    // 6. dto 변환
+                    OptionEntity optionEntity = optionRepository.findByOptionId(ooEntity.getOptionId());
+                    OrderOptionDTO orderOptionDTO = OrderOptionDTO.builder().optionId(ooEntity.getOptionId())
+                            .price(optionEntity.getPrice())
+                            .name(optionEntity.getOptionName()).build();
+                    // 추가
+                    orderOptionDTOList.add(orderOptionDTO);
+                }
+                // 추가
+                orderMenuDTO.setOrderOptionDTOS(orderOptionDTOList);
+                orderMenuDTOList.add(orderMenuDTO);
+            }
+            // 추가
+            orderListDTO.setOrderMenuDTOList(orderMenuDTOList);
+            return orderListDTO;
         }catch (Exception e){
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
