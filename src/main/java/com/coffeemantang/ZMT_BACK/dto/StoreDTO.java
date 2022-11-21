@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -65,6 +66,8 @@ public class StoreDTO {
     private int hits; // 가게 조회수.
 
     private int bookmark;
+
+    private MultipartFile file;
 
     public StoreDTO(final StoreEntity entity){
         this.storeId = entity.getStoreId();

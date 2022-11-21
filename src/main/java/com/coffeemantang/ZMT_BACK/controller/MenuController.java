@@ -27,26 +27,8 @@ public class MenuController {
     public ResponseEntity<?> addMenu(@AuthenticationPrincipal String memberId, @RequestBody MenuDTO menuDTO) {
 
         try {
-            //MenuDTO를 MenuEntity로 변환
-            MenuEntity tempMenuEntity = MenuDTO.toEntity(menuDTO);
-            //MenuNumber 생성
-            tempMenuEntity.setMenuNumber(menuService.createMenuNumber(tempMenuEntity.getStoreId()));
-            //MenuEntity 생성
-            MenuEntity menuEntity = menuService.addMenu(tempMenuEntity, Integer.parseInt(memberId));
-
-            MenuDTO responseMenuDTO = MenuDTO.builder()
-                    .menuId(menuEntity.getMenuId())
-                    .storeId(menuEntity.getStoreId())
-                    .menuName(menuEntity.getMenuName())
-                    .price(menuEntity.getPrice())
-                    .notice(menuEntity.getNotice())
-                    .category(menuEntity.getCategory())
-                    .tag(menuEntity.getTag())
-                    .menuNumber(menuEntity.getMenuNumber())
-                    .state(menuEntity.getState())
-                    .build();
-
-            return ResponseEntity.ok().body(responseMenuDTO);
+            menuService.addMenu(menuDTO, Integer.parseInt(memberId));
+            return ResponseEntity.ok().body("ok");
 
         } catch (Exception e) {
             ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();

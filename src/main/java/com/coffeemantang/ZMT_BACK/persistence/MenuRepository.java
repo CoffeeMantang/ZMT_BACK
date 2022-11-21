@@ -1,5 +1,6 @@
 package com.coffeemantang.ZMT_BACK.persistence;
 
+import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -69,4 +70,6 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
             "INNER JOIN charge AS c ON s.store_id = c.store_id AND c.dong LIKE CONCAT('%', :address, '%') ", nativeQuery = true)
     List<MenuEntity> findMenuByAddress(@Param("address") String address);
 
+    // 가게 아이디로 전체 메뉴 dto 가져오기
+    List<MenuDTO> findByStoreId(String storeId);
 }
