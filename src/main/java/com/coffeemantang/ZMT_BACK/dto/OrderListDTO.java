@@ -23,11 +23,12 @@ public class OrderListDTO {
 
     @NotBlank
     private String storeId;
+    private String storeName;
 
     @NotNull
     private int memberId;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime orderDate;
 
     @NotNull
@@ -35,6 +36,7 @@ public class OrderListDTO {
 
     @NotNull
     private int state;
+    private String address;
 
     private int time;
 
@@ -51,6 +53,7 @@ public class OrderListDTO {
     private List<MenuDTO> menuDTOList;
 
     private int charge;
+    private String thumb;
 
     private int memberrocationId;
 

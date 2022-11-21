@@ -169,7 +169,7 @@ public class MemberController {
     }
 
     // 회원정보 가져오기
-    @PostMapping("/getinfo")
+    @GetMapping("/getinfo")
     public ResponseEntity<?> getInfo(@AuthenticationPrincipal String memberId) {
         try {
             MemberEntity memberEntity = memberService.getMemberEntity(Integer.parseInt(memberId));
@@ -352,4 +352,19 @@ public class MemberController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
+    // 검색기록 추가하기
+    @GetMapping("/addSearch")
+    public ResponseEntity<?> addSearch(@AuthenticationPrincipal String memberId, @RequestParam(value = "keyword") String search) throws Exception{
+        try{
+            memberService.addSearch(Integer.parseInt(memberId), search);
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+
 }

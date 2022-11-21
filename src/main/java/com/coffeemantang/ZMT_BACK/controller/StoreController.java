@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -141,5 +143,74 @@ public class StoreController {
         }
 
     }
+
+    // 가게이름으로 검색하기 - 로그인해야함
+    @GetMapping(value = "/searchResult/{keyword}")
+    public ResponseEntity<?> getSearchResult(@PathVariable("keyword") String keyword, @RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort,
+                                             @AuthenticationPrincipal String memberId) throws Exception {
+        try{
+            List<StoreDTO> result = storeService.getSearchResultforMember(keyword, page, sort, Integer.parseInt(memberId));
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
+            }
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 가게이름으로 검색하기 - 로그인해야함
+    @GetMapping(value = "/searchMenuResult/{keyword}")
+    public ResponseEntity<?> getMenuSearch(@PathVariable("keyword") String keyword, @RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort,
+                                             @AuthenticationPrincipal String memberId) throws Exception {
+        try{
+            List<StoreDTO> result = storeService.getSearchByMenuNameForMember(keyword, page, sort, Integer.parseInt(memberId));
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
+            }
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 로그인한 멤버 정보로 해당 가게의 배달비 가져오기
+    @GetMapping("/getStoreCharge")
+    public ResponseEntity<?> getCharge(@AuthenticationPrincipal String memberId, @RequestParam(value="storeId") String storeId) throws Exception{
+        try{
+            int charge =  storeService.findCharge(Integer.parseInt(memberId), storeId);
+            // ResponseDTO responseDTO = ResponseDTO.builder().error("ok").data(Arrays.asList(charge)).build();
+            return ResponseEntity.ok().body(charge);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+    // 카테고리로 검색하기(로그인 없이) - 여기페이지는 1부터 시작합니다.
+    @GetMapping(value = "/categorySearch/{category}")
+    public ResponseEntity<?> cagetorySearch(@AuthenticationPrincipal String memberId, @PathVariable("category") int category,@RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort) throws Exception{
+        try{
+            List<StoreDTO> result = storeService.getCategorySearchWithLogin(category, page, sort, Integer.parseInt(memberId));
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
+            }
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
 
 }

@@ -20,7 +20,7 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenuEntity, Long
     public void deleteAllByOrderlistIdAndOrdermenuId(String orderListId, Long orderMenuId);
 
     // 오더리스트 아이디로 전체 메뉴 가져오기
-    public List<OrderMenuEntity> findAllByOrderlistId(String orderListId);
+    public List<OrderMenuEntity> findAllByOrderlistId(String orderlistId);
 
     // 멤버아이디와 메뉴아이디로 주문횟수 가져오기
     @Query(value = "SELECT COUNT(*) AS c FROM( SELECT ol.orderlist_id FROM ordermenu AS om INNER JOIN orderlist AS ol " +

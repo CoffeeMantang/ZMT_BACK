@@ -3,15 +3,18 @@ package com.coffeemantang.ZMT_BACK.service;
 import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import com.coffeemantang.ZMT_BACK.model.MenuEntity;
+import com.coffeemantang.ZMT_BACK.model.MenuImgEntity;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import com.coffeemantang.ZMT_BACK.persistence.MemberRepository;
 import com.coffeemantang.ZMT_BACK.persistence.MenuRepository;
 import com.coffeemantang.ZMT_BACK.persistence.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +23,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MenuService {
-
+    @Autowired
     private final MenuRepository menuRepository;
 
     private final StoreRepository storeRepository;
@@ -157,6 +160,20 @@ public class MenuService {
 
         return menuDTOList;
 
+    }
+
+    // 메뉴정보 가져오기
+    public MenuDTO getMenuInfo(int menuId) throws Exception{
+        try{
+            MenuEntity menuEntity = menuRepository.findByMenuId(menuId);
+            MenuDTO menuDTO = MenuDTO.builder().menuId(menuId)
+                    .price(menuEntity.getPrice()).notice(menuEntity.getNotice()).menuName(menuEntity.getMenuName())
+                    .menuPic("http://localhost:8080/images/menu/" + menuId + "_1.jpg").build();
+            return menuDTO;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
 }

@@ -17,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Member;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -360,4 +362,29 @@ public class MemberService {
             throw new RuntimeException(e.getMessage());
         }
     }
+
+    // 최근검색어 추가하기
+    public void addSearch(int memberId, String search) throws Exception{
+        try{
+            Optional<SearchEntity> oEntity = searchRepository.findTop1ByMemberIdOrderByTimeDesc(memberId);
+
+
+            if(oEntity.isPresent()){
+                // 있으면 키워드 비교해서 다른 키워드인 경우에만 추가
+                if(!oEntity.get().getSearch().equals(search)){
+                    SearchEntity searchEntity = SearchEntity.builder().search(search).memberId(memberId).time(LocalDateTime.now()).build();
+                    searchRepository.save(searchEntity);
+                }
+            }else{ // 넘어온 엔티티가 없으면 그냥 추가
+                SearchEntity searchEntity = SearchEntity.builder().search(search).memberId(memberId).time(LocalDateTime.now()).build();
+                searchRepository.save(searchEntity);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+
 }

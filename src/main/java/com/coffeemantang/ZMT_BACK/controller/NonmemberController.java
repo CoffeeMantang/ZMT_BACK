@@ -5,11 +5,13 @@ import com.coffeemantang.ZMT_BACK.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -73,25 +75,38 @@ public class NonmemberController {
     }
 
     // 가게 정보
-    @PostMapping("/store/info")
-    public StoreInfoDTO viewStoreInfo(@RequestBody StoreDTO storeDTO) {
+    @GetMapping("/store/info")
+    public ResponseEntity<?> viewStoreInfo(@RequestParam(value="storeId") String storeId) throws Exception{
 
         try {
-            StoreInfoDTO storeInfoDTO = storeInfoService.viewStoreInfo(storeDTO);
-            return storeInfoDTO;
+            StoreInfoDTO storeInfoDTO = storeInfoService.viewStoreInfo(storeId);
+            return ResponseEntity.ok().body(storeInfoDTO);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("가게 정보를 가져오는 도중 오류 발생");
         }
     }
 
+    // 메뉴 정보
+    @GetMapping("/menu/info")
+    public ResponseEntity<?> viewMenuInfo(@RequestParam(value="menuId") int menuId) throws Exception{
+        try{
+            MenuDTO menuDTO = menuService.getMenuInfo(menuId);
+            return ResponseEntity.ok().body(menuDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
     // 옵션 목록
-    @PostMapping("/store/option")
-    public List<OptionDTO> viewOptionList(int menuId) {
+    @GetMapping("/store/option")
+    public ResponseEntity<?> viewOptionList(@RequestParam(value="menuId") int menuId) {
 
         try {
             List<OptionDTO> optionDTOList = optionService.viewOptionList(menuId);
-            return optionDTOList;
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").data(Arrays.asList(optionDTOList)).build();
+            return ResponseEntity.ok().body(optionDTOList);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("옵션 리스트를 가져오는 도중 오류 발생");
@@ -150,13 +165,68 @@ public class NonmemberController {
     @GetMapping("/review")
     public ResponseEntity<?> storeReview(@RequestParam(value = "storeId") String storeId, @PageableDefault(size = 10) Pageable pageable) throws Exception{
         try{
-            List<ReviewDTO> listReview = reviewService.getStoreReviewList(storeId, pageable);
-            if(listReview.isEmpty()){ // 리뷰가 없을때
-                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
-                return ResponseEntity.ok().body(responseDTO);
-            }else{
-                return ResponseEntity.ok().body(listReview);
+            StoreDTO storeDTO = reviewService.getStoreReviewList(storeId, pageable);
+            return ResponseEntity.ok().body(storeDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 가게이름과 지역으로 검색하기
+    @GetMapping(value = "/searchResult/{keyword}")
+    public ResponseEntity<?> getSearchResult(@PathVariable("keyword") String keyword, @RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort,
+    @RequestParam(value = "address") String address) throws Exception {
+        try{
+            List<StoreDTO> result = storeService.getSearchResult(keyword, page, sort, address);
+            log.warn("들어온 주소: " + address);
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
             }
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 메뉴명과 지역으로 검색하기 -
+    @GetMapping(value = "/searchMenuResult/{keyword}")
+    public ResponseEntity<?> getMenuSearch(@PathVariable("keyword") String keyword, @RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort,
+                                           @RequestParam(value = "address") String address) throws Exception{
+        try{
+            List<StoreDTO> result = storeService.getSearchByMenuName(keyword, page, sort, address);
+            log.warn("들어온 주소: " + address);
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
+            }
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 카테고리로 검색하기(로그인 없이) - 여기페이지는 1부터 시작합니다.
+    @GetMapping(value = "/categorySearch/{category}")
+    public ResponseEntity<?> cagetorySearch(@PathVariable("category") int category,@RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort
+            ,@RequestParam(value="address") String address) throws Exception{
+        try{
+            List<StoreDTO> result = storeService.getCategorySearch(category, page, sort, address);
+            log.warn("들어온 주소: " + address);
+            ResponseDTO responseDTO;
+            if(result.size() == 0){ // 더이상 넘어갈게 없으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("error").build();
+            }else{ // 넘어갈게 있으면
+                responseDTO = ResponseDTO.builder().data(Arrays.asList(result.toArray())).error("ok").build();
+            }
+            return ResponseEntity.ok().body(responseDTO);
         }catch (Exception e){
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);

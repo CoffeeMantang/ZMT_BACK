@@ -14,5 +14,5 @@ public interface StoreInfoRepository extends JpaRepository<StoreInfoEntity, Inte
 
     StoreInfoEntity findByStoreinfoId(int storeinfoId);
 
-    StoreInfoEntity findByStoreId(String storeId);
+    StoreInfoEntity findAllByStoreId(String storeId);
 }

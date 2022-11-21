@@ -70,23 +70,6 @@ public class ReviewController {
         }
     }
 
-    // 가게 리뷰 보기(페이징) -> 추후 로그인 없이 볼 수 있는 path로 이동시킴
-    @GetMapping("/store")
-    public ResponseEntity<?> storeReview(@RequestParam(value = "storeId") String storeId, @PageableDefault(size = 10) Pageable pageable) throws Exception{
-        try{
-            List<ReviewDTO> listReview = reviewService.getStoreReviewList(storeId, pageable);
-            if(listReview.isEmpty()){ // 리뷰가 없을때
-                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
-                return ResponseEntity.ok().body(responseDTO);
-            }else{
-                return ResponseEntity.ok().body(listReview);
-            }
-        }catch (Exception e){
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-    }
-
     
     // 리뷰 추천(계정 당 하나)...
     @PostMapping("/recommend")
@@ -138,5 +121,7 @@ public class ReviewController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
+
+
 
 }

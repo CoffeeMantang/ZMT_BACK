@@ -29,6 +29,7 @@ public class OrderMenuDTO {
 
     @NotNull
     private int quantity;
+    private String name;
 
     public OrderMenuDTO(final OrderMenuEntity orderMenuEntity) {
 

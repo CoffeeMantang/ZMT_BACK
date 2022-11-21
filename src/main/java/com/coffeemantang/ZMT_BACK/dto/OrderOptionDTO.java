@@ -22,6 +22,7 @@ public class OrderOptionDTO {
 
     @NotNull
     private int optionId;
+    private String name;
 
 
     private int price;

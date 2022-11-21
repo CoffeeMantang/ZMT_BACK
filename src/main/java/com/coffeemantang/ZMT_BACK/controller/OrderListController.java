@@ -7,9 +7,14 @@ import com.coffeemantang.ZMT_BACK.model.OrderListEntity;
 import com.coffeemantang.ZMT_BACK.service.OrderListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -176,6 +181,20 @@ public class OrderListController {
 
         return "redirect:/";
 
+    }
+
+    // 주문내역 가져오기
+    @GetMapping("/getOrderlist")
+    public ResponseEntity<?> getMyOrderlist(@AuthenticationPrincipal String memberId, @PageableDefault(size = 10) Pageable pageable) throws Exception {
+
+        try{
+            List<OrderListDTO> result = orderListService.getMyOrderlist(Integer.parseInt(memberId), pageable);
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").data(Arrays.asList(result.toArray())).build();
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
     }
 
 
