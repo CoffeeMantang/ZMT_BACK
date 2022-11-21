@@ -47,12 +47,12 @@ public class NonmemberController {
     }
 
     // 가게 보기(클릭했을 때)
-    @PostMapping("/store/view")
-    public StoreDTO viewStore(@RequestBody StoreDTO storeDTO) {
+    @GetMapping("/store/view")
+    public ResponseEntity<?> viewStore(@RequestBody StoreDTO storeDTO) {
 
         try {
             StoreDTO responseStoreDTO = storeService.viewStore(0, storeDTO);
-            return responseStoreDTO;
+            return ResponseEntity.ok().body(responseStoreDTO);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("가게 정보를 가져오는 도중 오류 발생");

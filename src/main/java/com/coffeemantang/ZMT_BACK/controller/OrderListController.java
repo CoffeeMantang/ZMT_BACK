@@ -50,7 +50,7 @@ public class OrderListController {
     }
 
     // 장바구니 메뉴 삭제
-    @DeleteMapping("/delete")
+    @PostMapping("/delete")
     public String deleteMenuFromBasket(@AuthenticationPrincipal String memberId, @RequestBody OrderMenuDTO orderMenuDTO) {
 
         orderListService.deleteMenuFromBasket(Integer.parseInt(memberId), orderMenuDTO);
@@ -68,7 +68,7 @@ public class OrderListController {
     }
 
     // 오더리스트 메뉴 보기
-    @PostMapping("/list")
+    @GetMapping("/list")
     public OrderListDTO viewMenuList(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
 
         try {
@@ -197,5 +197,16 @@ public class OrderListController {
         }
     }
 
+    // 장바구니 가져오기
+    @GetMapping("getBasket")
+    public ResponseEntity<?> getBasket(@AuthenticationPrincipal String memberId) throws Exception{
+        try{
+            OrderListDTO orderListDTO = orderListService.getBasket(Integer.parseInt(memberId));
+            return ResponseEntity.ok().body(orderListDTO);
+        }catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
 
 }

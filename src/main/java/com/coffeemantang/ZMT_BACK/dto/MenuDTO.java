@@ -43,6 +43,7 @@ public class MenuDTO {
     private int state;
 
     private List<OptionDTO> optionDTOList;
+    private int quantity;
 
     private List<MultipartFile> files;
 

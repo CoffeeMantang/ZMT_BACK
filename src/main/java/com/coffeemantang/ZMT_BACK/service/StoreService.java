@@ -335,6 +335,7 @@ public class StoreService {
                     break;
                 case("reviewScore"):
                     // 리뷰평점 정렬
+                    entities = storeRepository.findByMenuNameOrderByReviewScore(10, ((page-1)*10), address, keyword);
                     break;
                 case("charge"): // 배달팁 낮은순
                     break;
@@ -377,6 +378,7 @@ public class StoreService {
                     break;
                 case("reviewScore"):
                     // 리뷰평점 정렬
+                    entities = storeRepository.findByMenuNameOrderByReviewScore(0, ((page-1)*10), address, keyword);
                     break;
                 case("charge"): // 배달팁 낮은순
                     break;

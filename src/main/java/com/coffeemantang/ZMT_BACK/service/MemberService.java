@@ -12,9 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.lang.reflect.Member;
 import java.time.LocalDateTime;
@@ -307,7 +311,7 @@ public class MemberService {
                             .address2(entity.getAddress2())
                             .nickname(entity.getNickname())
                             .memberrocationId(entity.getMemberrocationId())
-                            .state(1).build();
+                            .state(0).build();
                     listMrDTO.add(dto);
                 }
             }
@@ -380,6 +384,24 @@ public class MemberService {
                 searchRepository.save(searchEntity);
             }
 
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 대표주소 설정하기
+    @Transactional
+    public void setFirstAddress(final int memberId, final int memberrocationId) throws Exception{
+        try{
+            // 1. 기존에 state가 1인 주소를 0으로 바꿈
+            MemberRocationEntity memberRocationEntity = memberRocationRepository.findByMemberIdAndState(memberId, 1);
+            memberRocationEntity.setState(0);
+            memberRocationRepository.save(memberRocationEntity);
+            // 2. 새로운 주소를 1로 변경
+            memberRocationEntity = memberRocationRepository.findByMemberrocationId(memberrocationId);
+            memberRocationEntity.setState(1);
+            memberRocationRepository.save(memberRocationEntity);
         }catch (Exception e){
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());

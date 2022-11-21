@@ -16,6 +16,7 @@ import java.util.List;
 public class OrderMenuDTO {
 
     private Long ordermenuId;
+    private String menuPic;
 
 
     private String orderlistId;
