@@ -11,4 +11,5 @@ public interface ChargeRepository extends JpaRepository<ChargeEntity, String> {
     public ChargeEntity findByStoreIdAndDongContaining(String storeId, String dong);
 
     public List<ChargeEntity> findByDongContainingAndStoreId(String dong, String storeId);
+
 }

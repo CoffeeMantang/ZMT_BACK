@@ -143,30 +143,30 @@ public class OrderListService {
                 orderListRepository.save(orderListEntity);
             }
 
+
             // 오더메뉴 추가
+            MenuEntity menuEntity = menuRepository.findByMenuId(orderMenuDTO.getMenuId());
             String orderListId = orderListEntity.getOrderlistId();
             OrderMenuEntity orderMenuEntity = new OrderMenuEntity();
             orderMenuEntity.setOrderlistId(orderListId);
             orderMenuEntity.setMenuId(orderMenuDTO.getMenuId());
             orderMenuEntity.setQuantity(orderMenuDTO.getQuantity());
+            orderMenuEntity.setPrice(menuEntity.getPrice());
+            orderMenuEntity.setName(menuEntity.getMenuName());
             orderMenuRepository.save(orderMenuEntity);
 
             // 오더 옵션 추가
             Long orderMenuId = orderMenuRepository.save(orderMenuEntity).getOrdermenuId();
             for (OrderOptionDTO orderOptionDTO : orderMenuDTO.getOrderOptionDTOS()) {
+                OptionEntity optionEntity = optionRepository.findByOptionId(orderOptionDTO.getOptionId());
                 OrderOptionEntity orderOptionEntity = new OrderOptionEntity();
                 orderOptionEntity.setOrdermenuId(orderMenuId);
                 orderOptionEntity.setOptionId(orderOptionDTO.getOptionId());
+                orderOptionEntity.setPrice(optionEntity.getPrice());
+                orderOptionEntity.setName(optionEntity.getOptionName());
                 orderOptionRepository.save(orderOptionEntity);
             }
-//        OrderListDTO responseOrderListDTO = OrderListDTO.builder()
-//                .orderlistId(orderListEntity.getOrderlistId())
-//                .memberId(orderListEntity.getMemberId())
-//                .storeId(orderListEntity.getStoreId())
-//                .price(orderListEntity.getPrice())
-//                .state(orderListEntity.getState())
-//
-//                .build();
+
             return orderListEntity;
         }catch(Exception e){
             e.printStackTrace();
@@ -180,8 +180,7 @@ public class OrderListService {
     // 배달비 구하기
     public int selectCharge(int memberId, String storeId) {
         log.info("서비스 시작");
-        List<MemberRocationEntity> memberRocationEntityList = memberRocationRepository.findByMemberIdAndState(memberId, 1);
-        MemberRocationEntity memberRocationEntity = memberRocationEntityList.get(0);
+        MemberRocationEntity memberRocationEntity = memberRocationRepository.findByMemberIdAndState(memberId, 1);
         String address = memberRocationEntity.getAddress1();
         String[] arr = address.split(" ");
         char j = '동';

@@ -13,9 +13,7 @@ import java.util.Optional;
 @Repository
 public interface MemberRocationRepository extends JpaRepository<MemberRocationEntity, Integer> {
 
-    MemberRocationEntity findByMemberId(int memberId);
-
-    List<MemberRocationEntity> findByMemberIdAndState(int memberId, int state);
+    MemberRocationEntity findByMemberIdAndState(int memberId, int state);
 
     // memberId로 state가 1인 memberrocationId 가져오기
     @Query(value = "SELECT memberrocation_id FROM memberrocation WHERE member_id = :memberId AND state = 1", nativeQuery = true)
