@@ -98,22 +98,20 @@ public class OrderListService {
                         if(check2 == true && check1 == true){ // 서로 같은 메뉴이므로 수량과 가격만 증가시킴
                             // 수량증가
                             omEntity.setQuantity(omEntity.getQuantity() + orderMenuDTO.getQuantity());
-                            // 해당 메뉴의 가격 가져오기
-                            MenuEntity mEntity = menuRepository.findByMenuId(orderMenuDTO.getMenuId());
-                            // 가져온 가격에 옵션가격 더하기
+                            orderMenuRepository.save(omEntity);
+
+                            // 옵션가격 합 구하기
                             int optionPriceSum = 0;
                             for(OrderOptionEntity ooEntity : ooEntityList){
-                                // 가져온 옵션아이디로 옵션의 가격 가져오기
-                                OptionEntity oEntity = optionRepository.findByOptionId(ooEntity.getOptionId());
-                                // 옵션가격에 더하기
-                                optionPriceSum = optionPriceSum + oEntity.getPrice();
+                                optionPriceSum = optionPriceSum + ooEntity.getPrice();
                             }
+
                             // 메뉴의 가격과 옵션가격합에 수량곱하기
-                            int tempPrice = (optionPriceSum + mEntity.getPrice()) * orderMenuDTO.getQuantity();
+                            int tempPrice = (optionPriceSum + omEntity.getPrice()) * orderMenuDTO.getQuantity();
                             // 가격 변경
-                            omEntity.setPrice(omEntity.getPrice() + tempPrice);
+                            orderListEntity.setPrice(orderListEntity.getPrice() + tempPrice);
                             // 저장
-                            orderMenuRepository.save(omEntity);
+                            orderListRepository.save(orderListEntity);
                             // 함수종료
                             return orderListEntity;
                         }
