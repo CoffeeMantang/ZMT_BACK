@@ -1,6 +1,7 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
+import com.coffeemantang.ZMT_BACK.dto.StatsDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreInfoDTO;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -42,21 +44,11 @@ public class StoreController {
             // 가게의 상태 초기화
             tempStoreEntity.setState(0);
             // StoreService를 이용해 StoreEntity 생성
-            StoreEntity storeEntity = storeService.create(tempStoreEntity);
+            storeService.create(Integer.parseInt(memberId), storeDTO);
             // 리턴할 Store DTO 초기화
-            StoreDTO responseStoreDTO = StoreDTO.builder()
-                    .storeId(storeEntity.getStoreId())
-                    .memberId(storeEntity.getMemberId())
-                    .name(storeEntity.getName())
-                    .joinDay(storeEntity.getJoinDay())
-                    .category(storeEntity.getCategory())
-                    .address1(storeEntity.getAddress1())
-                    .address2(storeEntity.getAddress2())
-                    .addressX(storeEntity.getAddressX())
-                    .addressY(storeEntity.getAddressY())
-                    .build();
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
             // 응답
-            return ResponseEntity.ok().body(responseStoreDTO);
+            return ResponseEntity.ok().body(responseDTO);
         }catch (Exception e){
             // 예외 발생 시 error에 e.getMessage() 넣어 리턴
             ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();
@@ -210,6 +202,24 @@ public class StoreController {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
+    }
+
+    // 기간별 수익
+    @PostMapping("/stats")
+    public ResponseEntity<?> viewStats(@AuthenticationPrincipal String memberId, @RequestParam HashMap<String, String> map) {
+
+        try {
+            int type = Integer.parseInt(map.get("type"));
+            StatsDTO responseStatsDTO = new StatsDTO();
+            if (0 == type) { //수익만
+                responseStatsDTO = storeService.viewStats(Integer.parseInt(memberId), map);
+            }
+            return ResponseEntity.ok().body(responseStatsDTO);
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+
     }
 
 

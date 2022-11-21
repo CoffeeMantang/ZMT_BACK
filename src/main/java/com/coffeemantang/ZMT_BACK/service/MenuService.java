@@ -29,7 +29,8 @@ public class MenuService {
     private final StoreRepository storeRepository;
 
     //메뉴 추가
-    public MenuEntity addMenu(final MenuEntity menuEntity, int memberId) {
+    public MenuEntity addMenu(final MenuDTO menuDTO, int memberId) {
+        MenuEntity menuEntity = MenuEntity.builder().menuId(menuDTO.getMenuId()).build();
 
         int selectMemberIdByMenuId = menuRepository.selectMemberIdByMenuId(menuEntity.getMenuId());
 

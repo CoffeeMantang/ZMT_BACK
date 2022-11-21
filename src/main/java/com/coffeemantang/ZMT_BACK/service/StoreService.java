@@ -2,6 +2,7 @@ package com.coffeemantang.ZMT_BACK.service;
 
 import com.coffeemantang.ZMT_BACK.dto.ImageDTO;
 import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
+import com.coffeemantang.ZMT_BACK.dto.StatsDTO;
 import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
 import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
@@ -11,12 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -40,18 +45,81 @@ public class StoreService {
     private final MemberRocationRepository memberRocationRepository;
     @Autowired
     private final ChargeRepository chargeRepository;
+    @Autowired
+    private final OrderListRepository orderListRepository;
 
     // 가게 생성
-    public StoreEntity create(final StoreEntity storeEntity){
-        if(storeEntity == null || storeEntity.getMemberId() == 0){
+    public void create(int memberId, StoreDTO storeDTO) throws IOException {
+        if(storeDTO == null || storeDTO.getMemberId() == 0){
             log.warn("StoreService.create() : storeEntity에 내용이 부족해요");
             throw new RuntimeException("StoreService.create() : storeEntity에 내용이 부족해요");
-        } else if (memberRepository.findByMemberId(storeEntity.getMemberId()).getType() != 1) {
+        } else if (memberRepository.findByMemberId(storeDTO.getMemberId()).getType() != 1) {
             // 사업자 회원이 아니면 오류 리턴
             log.warn("사업자 회원이 아닌 회원이 가게생성 시도");
             throw new RuntimeException("사업자 회원이 아닌 회원이 가게생성 시도");
         }
-        return storeRepository.save(storeEntity);
+
+        StoreEntity storeEntity = new StoreEntity();
+        storeEntity.setStoreId(null);
+        storeEntity.setMemberId(memberId);
+        storeEntity.setJoinDay(LocalDateTime.now());
+        storeEntity.setState(0);
+        storeEntity.setName(storeDTO.getName());
+        storeEntity.setCategory(storeDTO.getCategory());
+        storeEntity.setAddress1(storeDTO.getAddress1());
+        storeEntity.setAddress2(storeDTO.getAddress2());
+        storeEntity.setAddressX(storeDTO.getAddressX());
+        storeEntity.setAddressY(storeDTO.getAddressY());
+
+        MultipartFile multipartFile = storeDTO.getFile();
+
+        String current_date = null;
+        if(!multipartFile.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            current_date = now.format(dateTimeFormatter);
+
+            String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
+
+            String path = "images" + File.separator + current_date;
+            File file = new File(path);
+
+            if (!file.exists()) {
+                boolean wasSuccessful = file.mkdirs();
+
+                if (!wasSuccessful) {
+                    log.warn("file : was not successful");
+                }
+            }
+            while (true) {
+                String originalFileExtension;
+                String contentType = multipartFile.getContentType();
+
+                if (ObjectUtils.isEmpty(contentType)) {
+                    break;
+                } else {
+                    if (contentType.contains("image/jpeg")) {
+                        originalFileExtension = ".jpg";
+                    } else if (contentType.contains("images/png")) {
+                        originalFileExtension = ".png";
+                    } else {
+                        break;
+                    }
+                }
+
+                String new_file_name = System.nanoTime() + originalFileExtension;
+
+                storeEntity.setThumb(path + file.separator + new_file_name);
+
+                file = new File(absolutePath + path + File.separator + new_file_name);
+                multipartFile.transferTo(file);
+
+                file.setWritable(true);
+                file.setReadable(true);
+                break;
+            }
+        }
+        storeRepository.save(storeEntity);
     }
 
     // 가게 수정
@@ -441,6 +509,73 @@ public class StoreService {
         }catch (Exception e){
             e.printStackTrace();
             throw new Exception(e.getMessage());
+        }
+    }
+
+    // 기간별 수익
+    public StatsDTO viewStats(int memberId, HashMap<String, String> map) {
+
+        if (memberId != storeRepository.selectMemberIdByStoreId(map.get("storeId"))) {
+            log.warn("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            throw new RuntimeException("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+        }
+
+        String year = map.get("year");
+        String month = map.get("month");
+        String day = map.get("day");
+
+        try {
+
+            StatsDTO statsDTO = new StatsDTO();
+            String storeId = map.get("storeId");
+            List<MenuDTO> menuDTOList = menuRepository.findByStoreId(storeId);
+            List<MenuDTO> statsMenuDTOList = new ArrayList<>();
+            int profit = 0;
+
+            if (0 == Integer.parseInt(month)) {
+
+                profit = orderListRepository.selectPriceByYear(2, storeId, year);
+
+                for (MenuDTO menuDTO : menuDTOList) {
+                    int count = orderListRepository.selectQuantityCountByYear(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year);
+                    int total = menuDTO.getPrice() * count;
+                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+                    statsMenuDTOList.add(statsMenuDTO);
+                }
+
+            } else if (0 == Integer.parseInt(day)) {
+
+                profit = orderListRepository.selectPriceByMonth(2, storeId, year + "-" + month);
+
+                for (MenuDTO menuDTO : menuDTOList) {
+                    int count = orderListRepository.selectQuantityCountByMonth(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year + "-" + month);
+                    int total = menuDTO.getPrice() * count;
+                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+                    statsMenuDTOList.add(statsMenuDTO);
+                }
+
+            } else if (0 < Integer.parseInt(day)) {
+
+                profit = orderListRepository.selectPriceByDay(2, storeId, year + "-" + month + "-" + day);
+
+                for (MenuDTO menuDTO : menuDTOList) {
+                    int count = orderListRepository.selectQuantityCountByDay(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year + "-" + month + "-" + day);
+                    int total = menuDTO.getPrice() * count;
+                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+                    statsMenuDTOList.add(statsMenuDTO);
+                }
+
+            }
+
+            Comparator<MenuDTO> comparingMenuDTO = Comparator.comparing(MenuDTO::getCount, Comparator.reverseOrder());
+            List<MenuDTO> newStatsMenuDTOList = statsMenuDTOList.stream().sorted(comparingMenuDTO).collect(Collectors.toList());
+            statsDTO.setMenuDTOList(newStatsMenuDTOList);
+            statsDTO.setProfit(profit);
+
+            return statsDTO;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("기간별 수익을 가져오는 중 에러 발생");
         }
     }
 }
