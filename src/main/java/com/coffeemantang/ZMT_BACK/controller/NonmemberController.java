@@ -11,6 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -332,6 +333,15 @@ public class NonmemberController {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
+    }
+
+    // 로그인 테스트2
+
+    @GetMapping("/test2")
+    public ResponseEntity<?> test2(@AuthenticationPrincipal String memberId){
+
+        ResponseDTO responseDTO = ResponseDTO.builder().build();
+        return ResponseEntity.badRequest().body(responseDTO);
     }
 
     // 닉네임 중복체크
