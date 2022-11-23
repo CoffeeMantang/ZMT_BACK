@@ -48,7 +48,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 // SecurityContext에 인증된 사용자를 등록
-                // 요청을 처리하는 과정에서 사용자가 인증됐는지의 여부나 인증된 사용자가 누군지 알아야 할 떄가 있기 때문
+                // 요청을 처리하는 과정에서 사용자가 인증됐는지의 여부나 인증된 사용자가 누군지 알아야 할 때가 있기 때문
+                // AuthenticationPrincipal 을 이용해 꺼내와 사용
                 SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
                 securityContext.setAuthentication(authentication);
                 SecurityContextHolder.setContext(securityContext);

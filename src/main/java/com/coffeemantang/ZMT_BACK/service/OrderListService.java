@@ -459,7 +459,7 @@ public class OrderListService {
                 MenuEntity menuEntity = menuRepository.findByMenuId(omEntity.getMenuId());
                 OrderMenuDTO orderMenuDTO = OrderMenuDTO.builder().menuId(omEntity.getMenuId())
                         .price(menuEntity.getPrice())
-                        .quantity(omEntity.getQuantity()).menuPic("http://localhost:8080/images/menu/" + omEntity.getMenuId() + "_1.jpg")
+                        .quantity(omEntity.getQuantity()).menuPic("http://localhost:8080/images/menu/" + omEntity.getMenuId() + ".jpg")
                         .ordermenuId(omEntity.getOrdermenuId())
                         .name(menuEntity.getMenuName()).build();
                 // 5. orderoption 가져오기

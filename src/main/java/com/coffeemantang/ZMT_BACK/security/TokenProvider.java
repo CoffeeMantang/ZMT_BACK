@@ -15,13 +15,31 @@ import java.util.Date;
 @Slf4j
 @Service
 public class TokenProvider {
-    private static final String SECRET_KEY = "meteo123";
+    private static final String SECRET_KEY = "meteo123"; // secret key
 
     // JWT 라이브러리를 이용해 JWT 토큰을 생성
     public String create(MemberEntity memberEntity){
         // 기한은 지금부터 1일로 설정
         Date expiryDate = Date.from(
                 Instant.now().plus(1, ChronoUnit.DAYS)
+        );
+        // JWT 토큰 생성
+        return Jwts.builder()
+                // header에 들어갈 내용 및 서명을 하기 위한 SECRET_KEY
+                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                // payload에 들어갈 내용
+                .setSubject(String.valueOf(memberEntity.getMemberId())) //sub
+                .setIssuer("demo app") //iss
+                .setIssuedAt(new Date()) //iat
+                .setExpiration(expiryDate) //exp
+                .compact();
+    }
+
+    // Refresh 토큰을 생성
+    public String createRefresh(MemberEntity memberEntity){
+        // 기한은 지금부터 1일로 설정
+        Date expiryDate = Date.from(
+                Instant.now().plus(30, ChronoUnit.DAYS) // 유효기간(일)
         );
         // JWT 토큰 생성
         return Jwts.builder()
