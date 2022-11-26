@@ -209,12 +209,8 @@ public class StoreController {
     public ResponseEntity<?> viewStats(@AuthenticationPrincipal String memberId, @RequestParam HashMap<String, String> map) {
 
         try {
-            int type = Integer.parseInt(map.get("type"));
-            StatsDTO responseStatsDTO = new StatsDTO();
-            if (0 == type) { //수익만
-                responseStatsDTO = storeService.viewStats(Integer.parseInt(memberId), map);
-            }
-            return ResponseEntity.ok().body(responseStatsDTO);
+            StatsDTO statsDTO = storeService.viewStats(Integer.parseInt(memberId), map);
+            return ResponseEntity.ok().body(statsDTO);
         } catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);

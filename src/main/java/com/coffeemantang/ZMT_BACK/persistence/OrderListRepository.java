@@ -22,42 +22,18 @@ public interface OrderListRepository extends JpaRepository<OrderListEntity, Stri
 
     OrderListEntity findByOrderlistId(String orderListId);
 
-    // 가게 아이디로 해당 년도 총수익 가져오기
-    @Query(value = "SELECT SUM(price) FROM orderlist WHERE state = :state " +
-            "AND store_id = :storeId AND date_format(order_date, '%Y') = :Y", nativeQuery = true)
-    int selectPriceByYear(@Param("state") int state, @Param("storeId") String storeId, @Param("Y") String Y);
+    // 해당 기간 내 전체 수익 합계 가져오기
+    @Query(value = "SELECT sum(price) FROM orderlist WHERE state = :state " +
+            "AND store_id = :storeId AND order_date BETWEEN :date1 AND :date2", nativeQuery = true)
+    int selectPriceByDate(@Param("state") Integer state, @Param("storeId") String storeId,
+                          @Param("date1") String date1, @Param("date2") String date2);
 
-    // 가게 아이디로 해당 월 총수익 가져오기
-    @Query(value = "SELECT SUM(price) FROM orderlist WHERE state = :state " +
-            "AND store_id = :storeId AND date_format(order_date, '%Y-%m') = :Ym", nativeQuery = true)
-    int selectPriceByMonth(@Param("state") int state, @Param("storeId") String storeId, @Param("Ym") String Ym);
-
-    // 가게 아이디로 해당 일 총수익 가져오기
-    @Query(value = "SELECT SUM(price) FROM orderlist WHERE state = :state " +
-            "AND store_id = :storeId AND date_format(order_date, '%Y-%m-%d') = :Ymd", nativeQuery = true)
-    int selectPriceByDay(@Param("state") int state, @Param("storeId") String storeId, @Param("Ymd") String Ymd);
-
-    // 파라미터 값으로 해당 년도 수량 합계 가져오기
+    // 해당 기간 내 메뉴 수량 합계 가져오기
     @Query(value = "SELECT COUNT(om.quantity) FROM orderlist ol INNER JOIN ordermenu om " +
             "on ol.orderlist_id = om.orderlist_id WHERE ol.state = :state " +
-            "AND ol.store_id = :storeId AND om.menu_id = :menuId AND date_format(ol.order_date, '%Y') = :Y", nativeQuery = true)
-    int selectQuantityCountByYear(@Param("state") int state, @Param("storeId") String storeId,
-                                  @Param("menuId") int menuId, @Param("Y") String Y);
-
-    // 파라미터 값으로 해당 월 수량 합계 가져오기
-    @Query(value = "SELECT COUNT(om.quantity) FROM orderlist ol INNER JOIN ordermenu om " +
-            "on ol.orderlist_id = om.orderlist_id WHERE ol.state = :state " +
-            "AND ol.store_id = :storeId AND om.menu_id = :menuId AND date_format(ol.order_date, '%Y-%m') = :Ym", nativeQuery = true)
-    int selectQuantityCountByMonth(@Param("state") int state, @Param("storeId") String storeId,
-                                   @Param("menuId") int menuId, @Param("Ym") String Ym);
-
-    // 파라미터 값으로 해당 일 수량 합계 가져오기
-    @Query(value = "SELECT COUNT(om.quantity) FROM orderlist ol INNER JOIN ordermenu om " +
-            "on ol.orderlist_id = om.orderlist_id WHERE ol.state = :state " +
-            "AND ol.store_id = :storeId AND om.menu_id = :menuId AND date_format(ol.order_date, '%Y-%m-%d') = :Ymd", nativeQuery = true)
-    int selectQuantityCountByDay(@Param("state") int state, @Param("storeId") String storeId,
-                                      @Param("menuId") int menuId, @Param("Ymd") String Ymd);
-
+            "AND ol.store_id = :storeId AND om.menu_id = :menuId AND ol.order_date between :date1 and :date2", nativeQuery = true)
+    int selectQuantityCountByDate(@Param("state") int state, @Param("storeId") String storeId,
+                                  @Param("menuId") int menuId, @Param("date1") String date1, @Param("date2") String date2);
 
     long countByMemberIdAndState(int memberId, int state);
 
