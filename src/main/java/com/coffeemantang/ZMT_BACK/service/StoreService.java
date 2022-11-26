@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -522,62 +523,92 @@ public class StoreService {
             throw new RuntimeException("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
         }
 
-        String year = map.get("year");
-        String month = map.get("month");
-        String day = map.get("day");
-
         try {
+
+            String type = map.get("type");
+            String date = map.get("date");
+            String from = map.get("from");
+            String to = map.get("to");
+            String date1 = null;
+            String date2 = null;
+
+            switch (date) {
+                case "0" :
+                    date1 = LocalDate.now() + " 00:00:00";
+                    date2 = LocalDate.now() + " 23:59:59";
+                    break;
+                case "1" :
+                    date1 = "DATE_SUB(now(), interval 1 month)";
+                    date2 = "now()";
+                    break;
+                case "3" :
+                    date1 = "DATE_SUB(now(), interval 3 month)";
+                    date2 = "now()";
+                    break;
+                case "6" :
+                    date1 = "DATE_SUB(now(), interval 6 month)";
+                    date2 = "now()";
+                    break;
+                case "-1" :
+                    date1 = from + " 00:00:00";
+                    date2 = to + " 23:59:59";
+                    break;
+            }
 
             StatsDTO statsDTO = new StatsDTO();
             String storeId = map.get("storeId");
-            List<MenuDTO> menuDTOList = menuRepository.findByStoreId(storeId);
-            List<MenuDTO> statsMenuDTOList = new ArrayList<>();
-            int profit = 0;
 
-            if (0 == Integer.parseInt(month)) {
-
-                profit = orderListRepository.selectPriceByYear(2, storeId, year);
-
-                for (MenuDTO menuDTO : menuDTOList) {
-                    int count = orderListRepository.selectQuantityCountByYear(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year);
-                    int total = menuDTO.getPrice() * count;
-                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
-                    statsMenuDTOList.add(statsMenuDTO);
-                }
-
-            } else if (0 == Integer.parseInt(day)) {
-
-                profit = orderListRepository.selectPriceByMonth(2, storeId, year + "-" + month);
-
-                for (MenuDTO menuDTO : menuDTOList) {
-                    int count = orderListRepository.selectQuantityCountByMonth(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year + "-" + month);
-                    int total = menuDTO.getPrice() * count;
-                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
-                    statsMenuDTOList.add(statsMenuDTO);
-                }
-
-            } else if (0 < Integer.parseInt(day)) {
-
-                profit = orderListRepository.selectPriceByDay(2, storeId, year + "-" + month + "-" + day);
-
-                for (MenuDTO menuDTO : menuDTOList) {
-                    int count = orderListRepository.selectQuantityCountByDay(2, menuDTO.getStoreId(), menuDTO.getMenuId(), year + "-" + month + "-" + day);
-                    int total = menuDTO.getPrice() * count;
-                    MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
-                    statsMenuDTOList.add(statsMenuDTO);
-                }
+            switch (type) {
+                case "0" :
+                    statsDTO = viewMenuStats(storeId, date1, date2);
 
             }
-
-            Comparator<MenuDTO> comparingMenuDTO = Comparator.comparing(MenuDTO::getCount, Comparator.reverseOrder());
-            List<MenuDTO> newStatsMenuDTOList = statsMenuDTOList.stream().sorted(comparingMenuDTO).collect(Collectors.toList());
-            statsDTO.setMenuDTOList(newStatsMenuDTOList);
-            statsDTO.setProfit(profit);
 
             return statsDTO;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("기간별 수익을 가져오는 중 에러 발생");
+            throw new RuntimeException("StoreService.viewStats : 에러 발생");
+        }
+    }
+
+    // 기간별 메뉴 통계
+    public StatsDTO viewMenuStats(String storeId, String date1, String date2) {
+
+        try {
+
+            // 전체 수익
+            int profit = orderListRepository.selectPriceByDate(2, storeId, date1, date2);
+
+            StatsDTO statsDTO = new StatsDTO();
+            List<MenuDTO> menuDTOList = menuRepository.findByStoreId(storeId);
+            List<MenuDTO> statsMenuDTOList = new ArrayList<>();
+            int totalAll = 0;
+
+            // 가게에 있는 모든 메뉴 대입
+            for (MenuDTO menuDTO : menuDTOList) {
+                // 주문내역에 있는 해당 메뉴의 주문 수량 가져오기
+                int count = orderListRepository.selectQuantityCountByDate(2, menuDTO.getStoreId(), menuDTO.getMenuId(), date1, date2);
+                // 메뉴 가격과 수량 합치기
+                int total = menuDTO.getPrice() * count;
+                // MenuDTO에 넣기
+                MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+                // MenuDTO를 MenuDTOList에 넣기
+                statsMenuDTOList.add(statsMenuDTO);
+                // 모든 메뉴 판매 수익
+                totalAll = totalAll + total;
+            }
+
+            // 수량으로 정렬 후 StatsDTO에 넣기
+            Comparator<MenuDTO> comparingMenuDTO = Comparator.comparing(MenuDTO::getCount, Comparator.reverseOrder());
+            List<MenuDTO> newStatsMenuDTOList = statsMenuDTOList.stream().sorted(comparingMenuDTO).collect(Collectors.toList());
+            statsDTO.setMenuDTOList(newStatsMenuDTOList);
+            statsDTO.setProfit(profit);
+            statsDTO.setTotalAll(totalAll);
+
+            return statsDTO;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("StoreService.viewMenuStats : 기간별 메뉴 통계를 가져오는 중 에러 발생");
         }
     }
 }

@@ -16,7 +16,11 @@ public class StatsDTO {
 
     private int profit;
 
+    private int totalAll;
+
     private List<MenuDTO> menuDTOList;
+
+    private List<OptionDTO> optionDTOList;
 
 
 
