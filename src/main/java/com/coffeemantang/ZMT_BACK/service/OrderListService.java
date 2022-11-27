@@ -41,6 +41,8 @@ public class OrderListService {
     private final ChargeRepository chargeRepository;
     @Autowired
     private final StoreRepository storeRepository;
+    @Autowired
+    private final ReviewRepository reviewRepository;
 
     // 장바구니 추가
     @Transactional
@@ -433,6 +435,15 @@ public class OrderListService {
                         .thumb("http://localhost:8080/images/store/" + list.getStoreId() + ".jpg").price(list.getPrice())
                         .orderMenuDTOList(orderMenuDTOList).storeName(storeName).orderDate(list.getOrderDate()).build();
                 orderListDTOList.add(orderListDTO); // 주문목록 리스트에 추가
+
+                // 한달 내이면 canReview 1로 추가
+                LocalDateTime start = LocalDateTime.now().minusMonths(1);
+                long count = reviewRepository.countByOrderlistIdAndDateBetween(orderListDTO.getOrderlistId(), start, LocalDateTime.now() );
+
+                if(count > 0){
+                    orderListDTO.setCanReview(1);
+                }
+
             }
             return orderListDTOList;
 

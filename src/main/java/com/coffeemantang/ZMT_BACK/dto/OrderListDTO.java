@@ -56,6 +56,7 @@ public class OrderListDTO {
     private String thumb;
 
     private int memberrocationId;
+    private int canReview;
 
 
     public OrderListDTO(final OrderListEntity orderListEntity) {

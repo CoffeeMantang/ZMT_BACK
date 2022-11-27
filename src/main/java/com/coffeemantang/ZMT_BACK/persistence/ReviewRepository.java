@@ -36,4 +36,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Integer> {
     // 가게의 리뷰 갯수 가져오기
     Long countByStoreId(String storeId);
 
+    // orderlist_id로 한달 내의 리뷰가 작성되었는지 확인하기
+    long countByOrderlistIdAndDateBetween(String orderlistId, LocalDateTime start, LocalDateTime end);
+
 }

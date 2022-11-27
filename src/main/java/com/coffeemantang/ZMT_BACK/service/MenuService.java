@@ -169,7 +169,7 @@ public class MenuService {
             MenuEntity menuEntity = menuRepository.findByMenuId(menuId);
             MenuDTO menuDTO = MenuDTO.builder().menuId(menuId)
                     .price(menuEntity.getPrice()).notice(menuEntity.getNotice()).menuName(menuEntity.getMenuName())
-                    .menuPic("http://localhost:8080/images/menu/" + menuId + "_1.jpg").build();
+                    .menuPic("http://localhost:8080/images/menu/" + menuId + ".jpg").build();
             return menuDTO;
         }catch(Exception e){
             e.printStackTrace();

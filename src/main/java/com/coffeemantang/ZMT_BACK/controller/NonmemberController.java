@@ -218,9 +218,9 @@ public class NonmemberController {
     // 가게이름과 지역으로 검색하기
     @GetMapping(value = "/searchResult/{keyword}")
     public ResponseEntity<?> getSearchResult(@PathVariable("keyword") String keyword, @RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort,
-    @RequestParam(value = "address") String address) throws Exception {
+    @RequestParam(value = "address") String address, @RequestParam(value="x") double x, @RequestParam(value="y") double y) throws Exception {
         try{
-            List<StoreDTO> result = storeService.getSearchResult(keyword, page, sort, address);
+            List<StoreDTO> result = storeService.getSearchResult(keyword, page, sort, address, x, y);
             log.warn("들어온 주소: " + address);
             ResponseDTO responseDTO;
             if(result.size() == 0){ // 더이상 넘어갈게 없으면
@@ -238,9 +238,9 @@ public class NonmemberController {
     // 메뉴명과 지역으로 검색하기 -
     @GetMapping(value = "/searchMenuResult/{keyword}")
     public ResponseEntity<?> getMenuSearch(@PathVariable("keyword") String keyword, @RequestParam(value = "page") int page, @RequestParam(value = "sort", required = false) String sort,
-                                           @RequestParam(value = "address") String address) throws Exception{
+                                           @RequestParam(value = "address") String address, @RequestParam("x") double x, @RequestParam("y") double y) throws Exception{
         try{
-            List<StoreDTO> result = storeService.getSearchByMenuName(keyword, page, sort, address);
+            List<StoreDTO> result = storeService.getSearchByMenuName(keyword, page, sort, address, x, y);
             log.warn("들어온 주소: " + address);
             ResponseDTO responseDTO;
             if(result.size() == 0){ // 더이상 넘어갈게 없으면
