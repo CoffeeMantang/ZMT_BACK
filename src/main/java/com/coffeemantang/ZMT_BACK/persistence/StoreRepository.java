@@ -43,7 +43,7 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
     @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, AVG(score) AS cnt FROM ( " +
             "SELECT store.store_id, store.name, store.thumb,store.address2, store.address1, store.address_x, store.address_y, store.category, store.hits, store.joinday, store.state, store.min, store.member_id FROM store INNER JOIN charge ON " +
             "store.store_id = charge.store_id AND charge.dong LIKE CONCAT('%',:address,'%') " +
-            ") AS s LEFT JOIN review AS r ON s.store_id = r.store_id GROUP BY s.store_id WHERE s.name LIKE CONCAT('%', :keyword, '%') ORDER BY cnt desc LIMIT :limit OFFSET :offset", nativeQuery = true)
+            ") AS s LEFT JOIN review AS r ON s.store_id = r.store_id WHERE s.name LIKE CONCAT('%', :keyword, '%') GROUP BY s.store_id ORDER BY cnt desc LIMIT :limit OFFSET :offset", nativeQuery = true)
     List<StoreEntity> findByNameOrderByReviewScore(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword);
 
     // 가게이름으로 가게찾기 - 배달팁 낮은순
