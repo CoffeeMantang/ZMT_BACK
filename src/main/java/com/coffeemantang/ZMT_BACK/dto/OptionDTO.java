@@ -29,12 +29,25 @@ public class OptionDTO {
     @NotNull
     private int price;
 
+    private int count;
+
+    private int total;
+
     public OptionDTO(final OptionEntity optionEntity) {
 
         this.optionId = optionEntity.getOptionId();
         this.menuId = optionEntity.getMenuId();
         this.optionName = optionEntity.getOptionName();
         this.price = optionEntity.getPrice();
+
+    }
+
+    public OptionDTO(String optionName, int price, int count, int total) {
+
+        this.optionName = optionName;
+        this.price = price;
+        this.count = count;
+        this.total = total;
 
     }
 
