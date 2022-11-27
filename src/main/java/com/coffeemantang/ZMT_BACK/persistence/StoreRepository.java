@@ -46,6 +46,19 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
             ") AS s LEFT JOIN review AS r ON s.store_id = r.store_id GROUP BY s.store_id WHERE s.name LIKE CONCAT('%', :keyword, '%') ORDER BY cnt desc LIMIT :limit OFFSET :offset", nativeQuery = true)
     List<StoreEntity> findByNameOrderByReviewScore(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword);
 
+    // 가게이름으로 가게찾기 - 배달팁 낮은순
+    @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, COUNT(*) AS cnt, c.charge " +
+            "FROM store AS s INNER JOIN charge AS c ON s.store_id = c.store_id AND c.dong LIKE CONCAT('%', :address,'%') " +
+            "LEFT JOIN orderlist AS ol ON s.store_id = ol.store_id  WHERE s.name LIKE CONCAT('%', :keyword, '%') GROUP BY s.store_id ORDER BY charge, cnt desc LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<StoreEntity> findByNameOrderByCharge(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword);
+
+    // 가게이름으로 가게찾기 - 거리순
+    @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, " +
+            "ST_Distance_Sphere(POINT(s.address_y, s.address_x), POINT(:addressY, :addressX)) AS distance " +
+            "FROM store AS s INNER JOIN charge AS c ON s.store_id = c.store_id AND c.dong LIKE CONCAT('%',:address,'%') " +
+            " WHERE s.name LIKE CONCAT('%', :keyword, '%') GROUP BY s.store_id ORDER BY distance desc LIMIT :limit OFFSET :offset ", nativeQuery = true)
+    List<StoreEntity> findByNameOrderByDistance(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword, @Param("addressX") double addressX, @Param("addressY") double addressY);
+
     // 메뉴명으로 주문가능한 가게찾기 - 주문순 정렬
     @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, COUNT(orderlist_id) AS cnt FROM ( " +
             "SELECT store.store_id, store.name, store.thumb,store.address2, store.address1, store.address_x, store.address_y, store.category, store.hits, store.joinday, store.state, store.min, store.member_id FROM store INNER JOIN charge ON " +
@@ -62,6 +75,22 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
             "INNER JOIN menu AS m ON m.store_id = s.store_id AND m.menu_name LIKE CONCAT('%',:keyword,'%') GROUP BY s.store_id ORDER BY cnt desc LIMIT :limit OFFSET :offset", nativeQuery = true)
     List<StoreEntity> findByMenuNameOrderByReviewScore(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword);
 
+    // 메뉴명으로 주문가능한 가게 찾기 - 배달팁 정렬
+    @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, c.charge " +
+            "FROM store AS s INNER JOIN charge AS c ON s.store_id = c.store_id AND c.dong LIKE CONCAT('%',:address,'%') INNER JOIN menu AS m ON s.store_id = m.store_id " +
+            "AND m.menu_name LIKE CONCAT('%', :keyword, '%') " +
+            "GROUP BY s.store_id ORDER BY charge desc LIMIT :limit OFFSET :offset ", nativeQuery = true)
+    List<StoreEntity> findByMenuNameOrderByCharge(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword);
+
+
+    // 메뉴명으로 주문가능한 가게 찾기 - 거리순 정렬
+    @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, " +
+            "ST_Distance_Sphere(POINT(s.address_y, s.address_x), POINT(:addressY, :addressX)) AS distance " +
+            "FROM store AS s INNER JOIN charge AS c ON s.store_id = c.store_id AND c.dong LIKE CONCAT('%',:address,'%') INNER JOIN menu AS m ON s.store_id = m.store_id " +
+            "AND m.menu_name LIKE CONCAT('%', :keyword, '%') " +
+            "GROUP BY s.store_id ORDER BY distance LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<StoreEntity> findByMenuNameOrderByDistance(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("keyword") String keyword, @Param("addressX") double addressX, @Param("addressY") double addressY);
+
     // 카테고리로 주문가능한 가게 찾기 - 주문순 정렬
     @Query(value = "SELECT s.store_id, s.name, s.thumb,s.address2, s.address1, s.address_x, s.address_y, s.category, s.hits, s.joinday, s.state, s.min, s.member_id, COUNT(orderlist_id) AS cnt FROM ( " +
             "SELECT store.store_id, store.name, store.thumb,store.address2, store.address1, store.address_x, store.address_y, store.category, store.hits, store.joinday, store.state, store.min, store.member_id FROM store INNER JOIN charge ON " +
@@ -69,5 +98,8 @@ public interface StoreRepository extends JpaRepository<StoreEntity, String> {
             ") AS s LEFT JOIN orderlist AS r ON s.store_id = r.store_id " +
             "where s.category = :category GROUP BY s.store_id ORDER BY cnt desc LIMIT :limit OFFSET :offset", nativeQuery = true)
     List<StoreEntity> findByCategoryOrderByOrderCount(@Param("limit") int limit, @Param("offset") int offset, @Param("address") String address, @Param("category") int category);
+
+    //
+
 }
 

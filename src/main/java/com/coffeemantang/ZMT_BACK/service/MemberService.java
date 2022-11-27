@@ -372,7 +372,6 @@ public class MemberService {
         try{
             Optional<SearchEntity> oEntity = searchRepository.findTop1ByMemberIdOrderByTimeDesc(memberId);
 
-
             if(oEntity.isPresent()){
                 // 있으면 키워드 비교해서 다른 키워드인 경우에만 추가
                 if(!oEntity.get().getSearch().equals(search)){

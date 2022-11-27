@@ -128,7 +128,7 @@ public class RecommendService {
                RecommendDTO recommendDTO = RecommendDTO.builder()
                        .menuName(menuEntity.getMenuName())
                        .menuId(menuId)
-                       .menuPic("http://localhost:8080/images/menu/" + menuId + "_1.jpg")
+                       .menuPic("http://localhost:8080/images/menu/" + menuId + ".jpg")
                        .storeId(storeEntity.getStoreId())
                        .state(0)
                        .storeName(storeEntity.getName()).build();
@@ -234,7 +234,7 @@ public class RecommendService {
                 RecommendDTO recommendDTO = RecommendDTO.builder()
                         .menuName(menuEntity.getMenuName())
                         .menuId(menuId)
-                        .menuPic("http://localhost:8080/images/menu/" + menuId + "_1.jpg")
+                        .menuPic("http://localhost:8080/images/menu/" + menuId + ".jpg")
                         .storeId(storeEntity.getStoreId())
                         .state(0)
                         .storeName(storeEntity.getName()).build();

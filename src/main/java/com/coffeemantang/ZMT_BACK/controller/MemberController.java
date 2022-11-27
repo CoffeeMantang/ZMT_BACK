@@ -31,41 +31,13 @@ public class MemberController {
     @Autowired
     private EmailTokenService emailTokenService;
 
-    // 회원가입
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerMember(@RequestBody MemberDTO memberDTO) {
-        try {
-            // 요청을 이용해 저장할 사용자 만들기
-            MemberEntity member = MemberEntity.builder()
-                    .email(memberDTO.getEmail())
-                    .password(passwordEncoder.encode(memberDTO.getPassword()))
-                    .name(memberDTO.getName())
-                    .nickname(memberDTO.getNickname())
-                    .tel(memberDTO.getTel())
-                    .birthDay(memberDTO.getBirthDay())
-                    .joinDay(LocalDateTime.now()) // 현재 시간
-                    .gender(memberDTO.getGender())
-                    .type(2) // 2: 일반회원
-                    .question(memberDTO.getQuestion())
-                    .answer(memberDTO.getAnswer()).build();
-            // 서비스를 이용해 Repository에 사용자 저장
-            MemberEntity registeredMember = memberService.create(member);
-            MemberDTO responseMemberDTO = MemberDTO.builder()
-                    .email(registeredMember.getEmail())
-                    .nickname(registeredMember.getNickname())
-                    .build();
-            emailTokenService.createEmailToken(registeredMember.getMemberId(), registeredMember.getEmail()); // 이메일 전송
-            return ResponseEntity.ok().body(responseMemberDTO);
-        } catch (Exception e) {
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-    }
-    // 인증 이메일 재전송
-    @PostMapping("/reconfirm")
-    public ResponseEntity<?> viewConfirmEmail(@RequestBody MemberDTO memberDTO){
+
+
+    // 로그인 테스트
+    @GetMapping("/test")
+    public ResponseEntity<?> test(@AuthenticationPrincipal String memberId){
+
         try{
-            emailTokenService.createEmailToken(memberDTO.getMemberId(), memberDTO.getEmail()); // 이메일 전송
             ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
             return ResponseEntity.ok().body(responseDTO);
         }catch (Exception e) {
@@ -74,34 +46,7 @@ public class MemberController {
         }
     }
 
-    // 로그인
-    @PostMapping("/signin")
-    public ResponseEntity<?> signin(@RequestBody MemberDTO memberDTO) {
-        // 로그인 성공 시에만 MemberEntity 가져옴
-        MemberEntity member = memberService.getByCredentials(
-                memberDTO.getEmail(),
-                memberDTO.getPassword(),
-                passwordEncoder
-        );
-        // MemberEntity 가져오기 성공 시
-        if (member != null) {
-            // TokenProvider 클래스를 이용해 토큰을 생성한 후 MemberDTO에 넣어서 반환
-            final String token = tokenProvider.create(member);
-            final MemberDTO responseMemberDTO = MemberDTO.builder()
-                    .email(member.getEmail())
-                    .memberId(member.getMemberId())
-                    .type(member.getType()) // 멤버의 타입
-                    .nickname(member.getNickname())
-                    .token(token)
-                    .build();
-            return ResponseEntity.ok().body(responseMemberDTO);
-        } else {
-            // MemberEntity 가져오기 실패 시 -> 로그인 실패
-            ResponseDTO responseDTO = ResponseDTO.builder()
-                    .error("login failed").build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-    }
+
 
     // 비밀번호 찾기 - 질문 가져가기
     @PostMapping("/getquestion")
@@ -233,23 +178,7 @@ public class MemberController {
         }
     }
 
-    // 닉네임 중복체크
-    @PostMapping("/checknickname")
-    public ResponseEntity<?> checkNickname(@RequestBody MemberDTO memberDTO){
-        try{
-            boolean check = memberService.checkNickname(memberDTO.getNickname());
-            if(check){
-                MemberDTO responseMemberDTO = MemberDTO.builder().nickname(memberDTO.getNickname()).build();
-                return ResponseEntity.ok().body(responseMemberDTO);
-            }else{
-                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
-                return ResponseEntity.badRequest().body(responseDTO);
-            }
-        }catch (Exception e){
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-    }
+
 
     // 이름변경
     @PostMapping("/updatename")
@@ -287,22 +216,7 @@ public class MemberController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
     }
-    // 이메일 중복 체크
-    @PostMapping("/checkemail")
-    public ResponseEntity<?> checkEmail(@RequestBody MemberDTO memberDTO){
-        try{
-            if(memberService.checkEmail(memberDTO.getEmail())){
-                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
-                return ResponseEntity.ok().body(responseDTO);
-            }else{
-                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
-                return ResponseEntity.badRequest().body(responseDTO);
-            }
-        }catch (Exception e) {
-            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-    }
+
     // 대표 주소 가져오기
     @PostMapping("/getmainaddress")
     public ResponseEntity<?> getMainAddress(@AuthenticationPrincipal String memberId) throws Exception{

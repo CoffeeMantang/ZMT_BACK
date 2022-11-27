@@ -4,7 +4,9 @@ import com.coffeemantang.ZMT_BACK.model.MemberEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -15,7 +17,7 @@ import java.util.Date;
 @Slf4j
 @Service
 public class TokenProvider {
-    private static final String SECRET_KEY = "meteo123";
+    private static final String SECRET_KEY = "meteo123"; // secret key
 
     // JWT 라이브러리를 이용해 JWT 토큰을 생성
     public String create(MemberEntity memberEntity){

@@ -243,7 +243,7 @@ public class StoreService {
     }
 
     // 가게이름으로 검색하기 - paging
-    public List<StoreDTO> getSearchResult(final String keyword, final int page, final String sort, String address) throws Exception{
+    public List<StoreDTO> getSearchResult(final String keyword, final int page, final String sort, String address, double x, double y) throws Exception{
         try{
             List<StoreEntity> entities = new ArrayList<>();
             // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
@@ -256,8 +256,10 @@ public class StoreService {
                     entities = storeRepository.findByNameOrderByReviewScore(10, ((page-1)*10), address, keyword);
                     break;
                 case("charge"): // 배달팁 낮은순
+                    entities = storeRepository.findByMenuNameOrderByCharge(10, ((page-1)*10), address, keyword);
                     break;
                 case("distance"): // 거리순
+                    entities = storeRepository.findByMenuNameOrderByDistance(10, ((page-1)*10), address, keyword, x, y);
                     break;
                 default: // 기본값은 주문순으로
                     entities = storeRepository.findByNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
@@ -288,6 +290,8 @@ public class StoreService {
             // 멤버아이디로 주소가져오기
             MemberRocationEntity memberRocationEntity = memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1); //대표주소 가져옴
             String address = memberRocationEntity.getAddress1();
+            double x = memberRocationEntity.getAddressX();
+            double y = memberRocationEntity.getAddressY();
             List<StoreEntity> entities = new ArrayList<>();
             // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
             switch (sort){
@@ -299,8 +303,10 @@ public class StoreService {
                     entities = storeRepository.findByNameOrderByReviewScore(10, ((page-1)*10), address, keyword);
                     break;
                 case("charge"): // 배달팁 낮은순
+                    entities = storeRepository.findByNameOrderByCharge(10, ((page-1)*10), address, keyword);
                     break;
                 case("distance"): // 거리순
+                    entities = storeRepository.findByMenuNameOrderByDistance(10, ((page-1)*10), address, keyword, x, y);
                     break;
                 default: // 기본값은 주문순으로
                     entities = storeRepository.findByNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
@@ -326,7 +332,7 @@ public class StoreService {
     }
 
     // 메뉴명으로 검색하기 = nonLogin
-    public List<StoreDTO> getSearchByMenuName(final String keyword, final int page, final String sort, final String address) throws Exception{
+    public List<StoreDTO> getSearchByMenuName(final String keyword, final int page, final String sort, final String address, double x, double y) throws Exception{
         try{
             List<StoreEntity> entities = new ArrayList<>();
             // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
@@ -339,8 +345,10 @@ public class StoreService {
                     entities = storeRepository.findByMenuNameOrderByReviewScore(10, ((page-1)*10), address, keyword);
                     break;
                 case("charge"): // 배달팁 낮은순
+                    entities = storeRepository.findByNameOrderByCharge(10, ((page-1)*10), address, keyword);
                     break;
                 case("distance"): // 거리순
+                    entities = storeRepository.findByNameOrderByDistance(10, ((page-1)*10), address, keyword, x, y);
                     break;
                 default: // 기본값은 주문순으로
                     entities = storeRepository.findByMenuNameOrderByOrderCount(10, ((page-1)*10), address, keyword);
@@ -372,6 +380,8 @@ public class StoreService {
             MemberRocationEntity memberRocationEntity = memberRocationRepository.findAddress1ByMemberIdAndState(memberId, 1); //대표주소 가져옴
             String address = memberRocationEntity.getAddress1();
             List<StoreEntity> entities = new ArrayList<>();
+            double x = memberRocationEntity.getAddressX();
+            double y = memberRocationEntity.getAddressY();
             // 1. 가게이름으로 검색한 entity 가져오기(10개씩!)
             switch (sort){
                 case("orderCount"):// 주문수 정렬
@@ -382,8 +392,10 @@ public class StoreService {
                     entities = storeRepository.findByMenuNameOrderByReviewScore(0, ((page-1)*10), address, keyword);
                     break;
                 case("charge"): // 배달팁 낮은순
+                    entities = storeRepository.findByMenuNameOrderByCharge(10, ((page-1)*10), address, keyword);
                     break;
                 case("distance"): // 거리순
+                    entities = storeRepository.findByMenuNameOrderByDistance(10, ((page-1)*10), address, keyword, x, y);
                     break;
                 default: // 기본값은 주문순으로
                     entities = storeRepository.findByMenuNameOrderByOrderCount(10, ((page-1)*10), address, keyword);

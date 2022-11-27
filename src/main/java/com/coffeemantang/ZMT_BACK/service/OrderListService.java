@@ -41,6 +41,8 @@ public class OrderListService {
     private final ChargeRepository chargeRepository;
     @Autowired
     private final StoreRepository storeRepository;
+    @Autowired
+    private final ReviewRepository reviewRepository;
 
     // 장바구니 추가
     @Transactional
@@ -433,6 +435,15 @@ public class OrderListService {
                         .thumb("http://localhost:8080/images/store/" + list.getStoreId() + ".jpg").price(list.getPrice())
                         .orderMenuDTOList(orderMenuDTOList).storeName(storeName).orderDate(list.getOrderDate()).build();
                 orderListDTOList.add(orderListDTO); // 주문목록 리스트에 추가
+
+                // 한달 내이면 canReview 1로 추가
+                LocalDateTime start = LocalDateTime.now().minusMonths(1);
+                long count = reviewRepository.countByOrderlistIdAndDateBetween(orderListDTO.getOrderlistId(), start, LocalDateTime.now() );
+
+                if(count > 0){
+                    orderListDTO.setCanReview(1);
+                }
+
             }
             return orderListDTOList;
 
@@ -459,7 +470,7 @@ public class OrderListService {
                 MenuEntity menuEntity = menuRepository.findByMenuId(omEntity.getMenuId());
                 OrderMenuDTO orderMenuDTO = OrderMenuDTO.builder().menuId(omEntity.getMenuId())
                         .price(menuEntity.getPrice())
-                        .quantity(omEntity.getQuantity()).menuPic("http://localhost:8080/images/menu/" + omEntity.getMenuId() + "_1.jpg")
+                        .quantity(omEntity.getQuantity()).menuPic("http://localhost:8080/images/menu/" + omEntity.getMenuId() + ".jpg")
                         .ordermenuId(omEntity.getOrdermenuId())
                         .name(menuEntity.getMenuName()).build();
                 // 5. orderoption 가져오기

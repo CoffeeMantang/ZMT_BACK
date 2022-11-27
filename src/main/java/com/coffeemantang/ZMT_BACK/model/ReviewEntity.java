@@ -35,4 +35,7 @@ public class ReviewEntity {
     private String content;
     @Column(name = "recommend")
     private int recommend;
+    @Column(name = "orderlist_id")
+    @JoinColumn(name = "orderlist_id")
+    private String orderlistId;
 }
