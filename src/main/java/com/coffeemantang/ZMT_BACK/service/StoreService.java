@@ -1,16 +1,10 @@
 package com.coffeemantang.ZMT_BACK.service;
 
-import com.coffeemantang.ZMT_BACK.dto.ImageDTO;
-import com.coffeemantang.ZMT_BACK.dto.MenuDTO;
-import com.coffeemantang.ZMT_BACK.dto.StatsDTO;
-import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
+import com.coffeemantang.ZMT_BACK.dto.*;
 import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,17 +30,19 @@ public class StoreService {
     private final MemberRepository memberRepository;
 
     private final BookmarkRepository bookmarkRepository;
-    @Autowired
+
     private final MenuRepository menuRepository;
-    @Autowired
+
     private final MenuImgRepository menuImgRepository;
-    @Autowired
+
+    private final OptionRepository optionRepository;
+
     private final ReviewRepository reviewRepository;
-    @Autowired
+
     private final MemberRocationRepository memberRocationRepository;
-    @Autowired
+
     private final ChargeRepository chargeRepository;
-    @Autowired
+
     private final OrderListRepository orderListRepository;
 
     // 가게 생성
@@ -544,23 +540,29 @@ public class StoreService {
             String date1 = null;
             String date2 = null;
 
+            // 사용자가 선택한 날짜 형식에 맞게 변수에 쿼리 문장 설정
             switch (date) {
+                // 당일
                 case "0" :
                     date1 = LocalDate.now() + " 00:00:00";
                     date2 = LocalDate.now() + " 23:59:59";
                     break;
+                // 1달 전
                 case "1" :
                     date1 = "DATE_SUB(now(), interval 1 month)";
                     date2 = "now()";
                     break;
+                // 3달 전
                 case "3" :
-                    date1 = "DATE_SUB(now(), interval 3 month)";
-                    date2 = "now()";
+                    date1 = " DATE_SUB("+LocalDate.now()+", interval 3 month) ";
+                    date2 = LocalDate.now()+"";
                     break;
+                // 6달 전
                 case "6" :
                     date1 = "DATE_SUB(now(), interval 6 month)";
                     date2 = "now()";
                     break;
+                // 직접 입력
                 case "-1" :
                     date1 = from + " 00:00:00";
                     date2 = to + " 23:59:59";
@@ -570,9 +572,16 @@ public class StoreService {
             StatsDTO statsDTO = new StatsDTO();
             String storeId = map.get("storeId");
 
+            // 사용자가 선택한 보여줄 정보에 맞는 함수로 이동
             switch (type) {
+                // 메뉴
                 case "0" :
                     statsDTO = viewMenuStats(storeId, date1, date2);
+                    break;
+                // 옵션
+                case "1" :
+                    statsDTO = viewOptionStats(map, date1, date2);
+                    break;
 
             }
 
@@ -589,21 +598,27 @@ public class StoreService {
         try {
 
             // 전체 수익
-            int profit = orderListRepository.selectPriceByDate(2, storeId, date1, date2);
+            int profit;
+            Integer tempProfit = orderListRepository.selectPriceByDate(2, storeId, date1, date2);
+            if(tempProfit == null) tempProfit = 0;
+            profit = tempProfit;
 
             StatsDTO statsDTO = new StatsDTO();
-            List<MenuDTO> menuDTOList = menuRepository.findByStoreId(storeId);
+            List<MenuEntity> menuEntityList = menuRepository.findByStoreId(storeId);
             List<MenuDTO> statsMenuDTOList = new ArrayList<>();
             int totalAll = 0;
 
             // 가게에 있는 모든 메뉴 대입
-            for (MenuDTO menuDTO : menuDTOList) {
+            for (MenuEntity menuEntity : menuEntityList) { // 나중에 QLRM 사용해서 쿼리 합치기
                 // 주문내역에 있는 해당 메뉴의 주문 수량 가져오기
-                int count = orderListRepository.selectQuantityCountByDate(2, menuDTO.getStoreId(), menuDTO.getMenuId(), date1, date2);
-                // 메뉴 가격과 수량 합치기
-                int total = menuDTO.getPrice() * count;
+                int count = orderListRepository.selectMenuCountByDate(2, menuEntity.getStoreId(), menuEntity.getMenuId(), date1, date2);
+                // 메뉴 가격과 수량 합
+                Integer tempTotal = orderListRepository.selectMenuSumByDate(2, menuEntity.getStoreId(), menuEntity.getMenuId(), date1, date2);
+                // Integer to int 변환
+                if(tempTotal == null) tempTotal = 0;
+                int total = tempTotal;
                 // MenuDTO에 넣기
-                MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+                MenuDTO statsMenuDTO = new MenuDTO(menuEntity.getMenuName(), menuEntity.getPrice(), count, total);
                 // MenuDTO를 MenuDTOList에 넣기
                 statsMenuDTOList.add(statsMenuDTO);
                 // 모든 메뉴 판매 수익
@@ -623,4 +638,89 @@ public class StoreService {
             throw new RuntimeException("StoreService.viewMenuStats : 기간별 메뉴 통계를 가져오는 중 에러 발생");
         }
     }
+
+    // 기간별 옵션 통계
+    public StatsDTO viewOptionStats(HashMap<String, String> map, String date1, String date2) {
+
+        try {
+            String storeId = map.get("storeId");
+            int menuId = Integer.parseInt(map.get("menuId"));
+
+            StatsDTO statsDTO = new StatsDTO();
+            List<OptionEntity> optionEntityList = optionRepository.findByMenuId(menuId);
+            List<OptionDTO> statsOptionDTOList = new ArrayList<>();
+            int totalAll = 0;
+
+            // 가게에 있는 모든 메뉴 대입
+            for (OptionEntity optionEntity : optionEntityList) {
+                // 주문내역에 있는 해당 옵션의 주문 수량 가져오기
+                int count = orderListRepository.selectOptionCountByDate(2, storeId,
+                        optionEntity.getMenuId(), optionEntity.getOptionId(), date1, date2);
+                // 옵션 가격과 수량 합
+                Integer tempTotal = orderListRepository.selectOptionSumByDate(2, storeId,
+                        optionEntity.getMenuId(), optionEntity.getOptionId(), date1, date2);
+                // Integer to int 변환
+                if(tempTotal == null) tempTotal = 0;
+                int total = tempTotal;
+                // OptionDTO에 넣기
+                OptionDTO statsOptionDTO = new OptionDTO(optionEntity.getOptionName(), optionEntity.getPrice(), count, total);
+                // MenuDTO를 MenuDTOList에 넣기
+                statsOptionDTOList.add(statsOptionDTO);
+                // 모든 메뉴 판매 수익
+                totalAll = totalAll + total;
+            }
+
+            // 수량으로 정렬 후 StatsDTO에 넣기
+            Comparator<OptionDTO> comparatorOptionDTO = Comparator.comparing(OptionDTO::getCount, Comparator.reverseOrder());
+            List<OptionDTO> newStatsOptionDTOList = statsOptionDTOList.stream().sorted(comparatorOptionDTO).collect(Collectors.toList());
+            statsDTO.setOptionDTOList(newStatsOptionDTOList);
+            statsDTO.setTotalAll(totalAll);
+
+            return statsDTO;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("StoreService.viewMenuStats : 기간별 옵션 통계를 가져오는 중 에러 발생");
+        }
+    }
+
+//    // 기간별 주문 취소 내역
+//    public StatsDTO viewCancelStats(String storeId, String date1, String date2) {
+//
+//        try {
+//
+//            // 전체 수익
+//            int profit = orderListRepository.selectPriceByDate(2, storeId, date1, date2);
+//
+//            StatsDTO statsDTO = new StatsDTO();
+//            List<MenuDTO> menuDTOList = .findByStoreId(storeId);
+//            List<MenuDTO> statsMenuDTOList = new ArrayList<>();
+//            int totalAll = 0;
+//
+//            // 가게에 있는 모든 메뉴 대입
+//            for (MenuDTO menuDTO : menuDTOList) {
+//                // 주문내역에 있는 해당 메뉴의 주문 수량 가져오기
+//                int count = orderListRepository.selectQuantityCountByDate(2, menuDTO.getStoreId(), menuDTO.getMenuId(), date1, date2);
+//                // 메뉴 가격과 수량 합치기
+//                int total = menuDTO.getPrice() * count;
+//                // MenuDTO에 넣기
+//                MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
+//                // MenuDTO를 MenuDTOList에 넣기
+//                statsMenuDTOList.add(statsMenuDTO);
+//                // 모든 메뉴 판매 수익
+//                totalAll = totalAll + total;
+//            }
+//
+//            // 수량으로 정렬 후 StatsDTO에 넣기
+//            Comparator<MenuDTO> comparingMenuDTO = Comparator.comparing(MenuDTO::getCount, Comparator.reverseOrder());
+//            List<MenuDTO> newStatsMenuDTOList = statsMenuDTOList.stream().sorted(comparingMenuDTO).collect(Collectors.toList());
+//            statsDTO.setMenuDTOList(newStatsMenuDTOList);
+//            statsDTO.setProfit(profit);
+//            statsDTO.setTotalAll(totalAll);
+//
+//            return statsDTO;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new RuntimeException("StoreService.viewMenuStats : 기간별 메뉴 통계를 가져오는 중 에러 발생");
+//        }
+//    }
 }

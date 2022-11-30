@@ -71,5 +71,5 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
     List<MenuEntity> findMenuByAddress(@Param("address") String address);
 
     // 가게 아이디로 전체 메뉴 dto 가져오기
-    List<MenuDTO> findByStoreId(String storeId);
+    List<MenuEntity> findByStoreId(String storeId);
 }
