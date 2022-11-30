@@ -42,90 +42,116 @@ public class ReviewService {
     @Autowired
     private StoreRepository storeRepository;
 
-    public void create(final int memberId, final ReviewDTO reviewDTO) throws Exception {
-        // 리뷰 엔티티 생성
-        final ReviewEntity reviewEntity = ReviewEntity.builder().memberId(memberId)
-                .title(reviewDTO.getTitle())
-                .content(reviewDTO.getContent())
-                .date(LocalDateTime.now())
-                .recommend(0)
-                .storeId(reviewDTO.getStoreId())
-                .build();
+    public void create(final int memberId, List<MultipartFile> multipartFiles, String title, String content, String orderlistId, int score) throws Exception {
 
-        List<MultipartFile> multipartFiles = reviewDTO.getFiles();
+        try{
+            // 리뷰작성 가능한지 체크
+            OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderlistId);
+            LocalDateTime start = LocalDateTime.now().minusMonths(1); // 한달전
 
-        int reviewId = reviewRepository.save(reviewEntity).getReviewId(); // 저장한 리뷰 아이디
-
-        // 반환할 파일 리스트
-        List<ReviewImgEntity> fileList = new ArrayList<>();
-        // 전달되어 온 파일이 존재할 경우
-        String current_date = null;
-        if (!CollectionUtils.isEmpty(multipartFiles)) {
-            LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-            current_date = now.format(dateTimeFormatter);
-
-            // 프로젝트 디렉터리 내의 저장을 위한 절대 경로 설정
-            // 경로 구분자 File.separator 사용
-            String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
-
-            // 파일을 저장할 세부 경로 지정
-            String path = "images" + File.separator + current_date;
-            File file = new File(path);
-
-            // 디렉터리가 존재하지 않을 경우
-            if (!file.exists()) {
-                boolean wasSuccessful = file.mkdirs(); // 디렉터리 생성
-
-                // 디렉터리 생성에 실패했을 경우
-                if (!wasSuccessful) {
-                    log.warn("file: was not successful");
+            if(orderListEntity == null || orderListEntity.getOrderDate().isBefore(start) || orderListEntity.getState() != 4){ // 리뷰작성가능한지 체크
+                log.warn("리뷰작성불가능1");
+                return;
+            }else{
+                long count = reviewRepository.countByOrderlistIdAndDateBetween(orderlistId, start, LocalDateTime.now() );
+                if(count > 0){
+                    log.warn("리뷰작성불가능2");
+                    return;
                 }
             }
+            // 리뷰 엔티티 생성
+            final ReviewEntity reviewEntity = ReviewEntity.builder().memberId(memberId)
+                    .title(title)
+                    .content(content)
+                    .date(LocalDateTime.now())
+                    .recommend(0)
+                    .storeId(orderListEntity.getStoreId())
+                    .orderlistId(orderListEntity.getOrderlistId())
+                    .score(score)
+                    .build();
 
-            // 다중 파일 처리
-            for (MultipartFile multipartFile : multipartFiles) {
-                // 파일의 확장자 추출
-                String originalFileExtension;
-                String contentType = multipartFile.getContentType();
+            int reviewId = reviewRepository.save(reviewEntity).getReviewId(); // 저장한 리뷰 아이디
 
-                // 확장자명이 존재하지 않을 경우 처리하지 않음
-                if (ObjectUtils.isEmpty(contentType)) {
-                    break;
-                } else { // 확장자가 jpeg, png인 파일들만 받아서 처리
-                    if (contentType.contains("image/jpeg")) {
-                        originalFileExtension = ".jpg";
-                    } else if (contentType.contains("images/png")) {
-                        originalFileExtension = ".png";
-                    } else { // 다른 확장자일 경우 처리하지 않음
-                        break;
+            // 반환할 파일 리스트
+            List<ReviewImgEntity> fileList = new ArrayList<>();
+            // 전달되어 온 파일이 존재할 경우
+            String current_date = null;
+            if (!CollectionUtils.isEmpty(multipartFiles)) {
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                current_date = now.format(dateTimeFormatter);
+
+                // 프로젝트 디렉터리 내의 저장을 위한 절대 경로 설정
+                // 경로 구분자 File.separator 사용
+                // String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
+
+                String absolutePath = "C:" + File.separator + "zmtImgs" + File.separator + "review";
+
+                // 파일을 저장할 세부 경로 지정
+                String path = absolutePath;
+                File file = new File(path);
+
+                // 디렉터리가 존재하지 않을 경우
+                if (!file.exists()) {
+                    boolean wasSuccessful = file.mkdirs(); // 디렉터리 생성
+
+                    // 디렉터리 생성에 실패했을 경우
+                    if (!wasSuccessful) {
+                        log.warn("file: was not successful");
                     }
                 }
 
-                // 파일명 중복 피하기 위해 나노초까지 얻어와 지정
-                String new_file_name = System.nanoTime() + originalFileExtension; // 나노초 + 확장자
+                // 다중 파일 처리
+                int cnt = 1;
+                for (MultipartFile multipartFile : multipartFiles) {
+                    // 파일의 확장자 추출
+                    String originalFileExtension;
+                    String contentType = multipartFile.getContentType();
 
-                // 엔티티 생성
-                ReviewImgEntity reviewImgEntity = ReviewImgEntity.builder()
-                        .reviewId(reviewId) // 리뷰아이디
-                        .path(path + file.separator + new_file_name)
-                        .build();
+                    // 확장자명이 존재하지 않을 경우 처리하지 않음
+                    if (ObjectUtils.isEmpty(contentType)) {
+                        break;
+                    } else { // 확장자가 jpeg, png인 파일들만 받아서 처리
+                        if (contentType.contains("image/jpeg")) {
+                            originalFileExtension = ".jpg";
+                        } else if (contentType.contains("images/png")) {
+                            originalFileExtension = ".png";
+                        } else { // 다른 확장자일 경우 처리하지 않음
+                            break;
+                        }
+                    }
 
-                // 생성후 리스트에 추가
-                fileList.add(reviewImgEntity);
+                    // 파일명 중복 피하기 위해 나노초까지 얻어와 지정
+                    //String new_file_name = System.nanoTime() + originalFileExtension; // 나노초 + 확장자
 
-                // 업로드 한 파일 데이터를 지정한 파일에 저장
-                file = new File(absolutePath + path + File.separator + new_file_name);
-                multipartFile.transferTo(file);
+                    // 파일명은 아이디 + _숫자로
+                    String new_file_name = String.valueOf(reviewId) + "_" + String.valueOf(cnt);
 
-                // 파일 권한 설정
-                file.setWritable(true);
-                file.setReadable(true);
+                    // 엔티티 생성
+                    ReviewImgEntity reviewImgEntity = ReviewImgEntity.builder()
+                            .reviewId(reviewId) // 리뷰아이디
+                            .path(new_file_name)
+                            .build();
 
-                // 엔티티 저장
-                reviewImgRepository.save(reviewImgEntity);
+                    // 생성후 리스트에 추가
+                    fileList.add(reviewImgEntity);
 
+                    // 업로드 한 파일 데이터를 지정한 파일에 저장
+                    file = new File( path + File.separator + new_file_name);
+                    multipartFile.transferTo(file);
+
+                    // 파일 권한 설정
+                    file.setWritable(true);
+                    file.setReadable(true);
+
+                    // 엔티티 저장
+                    reviewImgRepository.save(reviewImgEntity);
+                    cnt ++;
+
+                }
             }
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 

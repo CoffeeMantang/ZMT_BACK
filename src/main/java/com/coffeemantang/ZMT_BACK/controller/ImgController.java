@@ -57,7 +57,7 @@ public class ImgController {
     @GetMapping(value = "/review/{fileOriginName}")
     public ResponseEntity<Resource> getReviewImgByName(@PathVariable("fileOriginName") String fileName) throws Exception{
         try{
-            String path = "C:\\zmtImgs\\reviewImg\\"; // 실제 이미지가 있는 위치
+            String path = "C:\\zmtImgs\\review\\"; // 실제 이미지가 있는 위치
             FileSystemResource resource = new FileSystemResource(path+fileName);
             if(!resource.exists()){
                 throw new Exception();
