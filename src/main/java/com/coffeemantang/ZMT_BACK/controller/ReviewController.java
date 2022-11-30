@@ -12,6 +12,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.xml.ws.Response;
 import java.util.List;
@@ -25,17 +26,12 @@ public class ReviewController {
 
     // 리뷰 생성 (이미지 추가)
     @PostMapping("/create")
-    public ResponseEntity<?> createReview(@AuthenticationPrincipal String memberId, @RequestBody ReviewDTO reviewDTO) throws Exception{
+    public ResponseEntity<?> createReview(@AuthenticationPrincipal String memberId, @RequestParam("title") String title, @RequestParam("content") String content, @RequestParam("score") int score,
+                                          @RequestParam(value="file", required=false) List<MultipartFile> files, @RequestParam("orderlistId") String orderlistId) throws Exception{
         try{
-            // 리뷰 쓰기가 가능할 경우에만 create
-            if (reviewService.checkOrder(Integer.parseInt(memberId), reviewDTO.getStoreId())){
-                reviewService.create(Integer.parseInt(memberId),reviewDTO);
-
-                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
-                return ResponseEntity.ok().body(responseDTO);
-            }
-            ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
-            return ResponseEntity.badRequest().body(responseDTO);
+            reviewService.create(Integer.parseInt(memberId), files, title, content, orderlistId, score);
+            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+            return ResponseEntity.ok().body(responseDTO);
         }catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
