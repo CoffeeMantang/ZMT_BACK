@@ -5,6 +5,7 @@ import com.coffeemantang.ZMT_BACK.model.*;
 import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import javax.validation.Valid;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -393,8 +395,19 @@ public class OrderListService {
     public List<OrderListDTO> getMyOrderlist(int memberId, Pageable pageable) throws Exception{
         try{
             // 1. 내 Orderlist 가져오기
-            Page<OrderListEntity> orderListPage = orderListRepository.findAllByMemberId(memberId, pageable);
+            // state가 1(대기)인 주문내역 가져오기
+            Page<OrderListEntity> orderListPage = orderListRepository.findAllByMemberIdAndState(memberId, 1, pageable);
             List<OrderListEntity> orderListList = orderListPage.getContent();
+            // state가 2(수락)인 주문내역 가져오기
+            orderListPage = orderListRepository.findAllByMemberIdAndState(memberId, 2, pageable);
+            orderListList = ListUtils.union(orderListList, orderListPage.getContent());
+            // state가 3(취소)인 주문내역 가져오기
+            orderListPage = orderListRepository.findAllByMemberIdAndState(memberId, 3, pageable);
+            orderListList = ListUtils.union(orderListList, orderListPage.getContent());
+            // state가 4(종료)인 주문내역 가져오기
+            orderListPage = orderListRepository.findAllByMemberIdAndState(memberId, 4, pageable);
+            orderListList = ListUtils.union(orderListList, orderListPage.getContent());
+            
             List<OrderListDTO> orderListDTOList = new ArrayList<>(); // 리턴할 리스트
             // 2. foreach로 메뉴목록 가져오기
             for(OrderListEntity list : orderListList){
@@ -436,12 +449,13 @@ public class OrderListService {
                         .orderMenuDTOList(orderMenuDTOList).storeName(storeName).orderDate(list.getOrderDate()).build();
                 orderListDTOList.add(orderListDTO); // 주문목록 리스트에 추가
 
-                // 한달 내이면 canReview 1로 추가
-                LocalDateTime start = LocalDateTime.now().minusMonths(1);
-                long count = reviewRepository.countByOrderlistIdAndDateBetween(orderListDTO.getOrderlistId(), start, LocalDateTime.now() );
-
-                if(count > 0){
-                    orderListDTO.setCanReview(1);
+                LocalDateTime start = LocalDateTime.now().minusMonths(1); // 한달전
+                if(!list.getOrderDate().isBefore(start) && list.getState() == 4){ // 리뷰작성가능한지 체크
+                    // 한달 내이면 리뷰가 작성 되었는지 확인하고 작성되지 않았으면 canReview를 1로
+                    long count = reviewRepository.countByOrderlistIdAndDateBetween(orderListDTO.getOrderlistId(), start, LocalDateTime.now() );
+                    if(count < 1){
+                        orderListDTO.setCanReview(1);
+                    }
                 }
 
             }

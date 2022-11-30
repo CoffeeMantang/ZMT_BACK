@@ -89,9 +89,9 @@ public class ReviewController {
 
     // 리뷰 작성 가능 여부 가져오기
     @PostMapping("/checkreview")
-    public ResponseEntity<?> recommend(@AuthenticationPrincipal String memberId, @RequestParam(value = "storeId") String storeId) throws Exception{
+    public ResponseEntity<?> recommend(@AuthenticationPrincipal String memberId, @RequestParam(value = "orderlistId") String orderlistId) throws Exception{
         try{
-            if(reviewService.checkReview(Integer.parseInt(memberId), storeId)){
+            if(reviewService.checkReview(Integer.parseInt(memberId), orderlistId)){
                 ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
                 return ResponseEntity.ok().body(responseDTO);
             }else{

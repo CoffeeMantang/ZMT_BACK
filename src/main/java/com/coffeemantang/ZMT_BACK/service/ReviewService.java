@@ -307,7 +307,7 @@ public class ReviewService {
         }
     }
 
-    // 리뷰작성 가능여부
+    // 리뷰작성 가능여부 체크
     public boolean checkReview(final int memberId, final String storeId) throws Exception{
         try{
             // 한달 내에 해당 가게 + 해당 회원의 주문 내역 갯수와 리뷰 갯수 가져오기

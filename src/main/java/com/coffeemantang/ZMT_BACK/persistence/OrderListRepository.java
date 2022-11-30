@@ -73,6 +73,6 @@ public interface OrderListRepository extends JpaRepository<OrderListEntity, Stri
     long countByMemberIdAndState(int memberId, int state);
 
     // 해당 멤버의 주문내역 모두 가져오기
-    Page<OrderListEntity> findAllByMemberId(int memberId, Pageable pageable);
+    Page<OrderListEntity> findAllByMemberIdAndState(int memberId, int state,Pageable pageable);
 
 }
