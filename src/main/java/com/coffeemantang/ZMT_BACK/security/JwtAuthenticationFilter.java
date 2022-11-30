@@ -37,22 +37,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (token != null && !token.equalsIgnoreCase("null")){
                 // userId 가져오기. 위조된 경우 예외 처리된다.
                 // 토큰의 위조 여부를 확인하고 subject(userId)를 리턴하는 TokenProvider의 메서드 사용
-                String userId = tokenProvider.validateAndGetUserId(token);
-                log.info("Authenticated user ID : " + userId);
-                // 인증 완료. SecurityContextHolder에 등록해야 인증된 사용자라고 생각한다.
-                // 이 객체에 사용자의 인증 정보를 저장
-                AbstractAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userId, // 인증된 사용자의 정보. 문자열이 아니어도 아무것이나 넣을 수 있다. 보통은 UserDetails 라는 오브젝트를 넣음
-                        null, //
-                        AuthorityUtils.NO_AUTHORITIES
-                );
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // SecurityContext에 인증된 사용자를 등록
-                // 요청을 처리하는 과정에서 사용자가 인증됐는지의 여부나 인증된 사용자가 누군지 알아야 할 때가 있기 때문
-                // AuthenticationPrincipal 을 이용해 꺼내와 사용
-                SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-                securityContext.setAuthentication(authentication);
-                SecurityContextHolder.setContext(securityContext);
+                if(tokenProvider.validateToken(token)){
+                    String userId = tokenProvider.validateAndGetUserId(token);
+                    log.info("Authenticated user ID : " + userId);
+                    // 인증 완료. SecurityContextHolder에 등록해야 인증된 사용자라고 생각한다.
+                    // 이 객체에 사용자의 인증 정보를 저장
+                    AbstractAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userId, // 인증된 사용자의 정보. 문자열이 아니어도 아무것이나 넣을 수 있다. 보통은 UserDetails 라는 오브젝트를 넣음
+                            null, //
+                            AuthorityUtils.NO_AUTHORITIES
+                    );
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // SecurityContext에 인증된 사용자를 등록
+                    // 요청을 처리하는 과정에서 사용자가 인증됐는지의 여부나 인증된 사용자가 누군지 알아야 할 때가 있기 때문
+                    // AuthenticationPrincipal 을 이용해 꺼내와 사용
+                    SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+                    securityContext.setAuthentication(authentication);
+                    SecurityContextHolder.setContext(securityContext);
+                }
             }
         } catch(Exception ex){
             logger.error("Could not set user authentication in security context", ex);

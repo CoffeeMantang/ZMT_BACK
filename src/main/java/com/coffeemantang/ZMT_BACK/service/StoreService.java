@@ -302,7 +302,7 @@ public class StoreService {
                     entities = storeRepository.findByNameOrderByCharge(10, ((page-1)*10), address, keyword);
                     break;
                 case("distance"): // 거리순
-                    entities = storeRepository.findByMenuNameOrderByDistance(10, ((page-1)*10), address, keyword, x, y);
+                    entities = storeRepository.findByNameOrderByDistance(10, ((page-1)*10), address, keyword, x, y);
                     break;
                 default: // 기본값은 주문순으로
                     entities = storeRepository.findByNameOrderByOrderCount(10, ((page-1)*10), address, keyword);

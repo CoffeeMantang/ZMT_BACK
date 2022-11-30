@@ -198,7 +198,7 @@ public class OrderListController {
     }
 
     // 장바구니 가져오기
-    @GetMapping("getBasket")
+    @GetMapping("/getBasket")
     public ResponseEntity<?> getBasket(@AuthenticationPrincipal String memberId) throws Exception{
         try{
             OrderListDTO orderListDTO = orderListService.getBasket(Integer.parseInt(memberId));

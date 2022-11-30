@@ -1,11 +1,9 @@
 package com.coffeemantang.ZMT_BACK.security;
 
 import com.coffeemantang.ZMT_BACK.model.MemberEntity;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.remoting.jaxws.JaxWsPortClientInterceptor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -50,5 +48,15 @@ public class TokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
+    }
+
+    // 토큰 유효기간 만료여부 검사
+    public boolean validateToken(String token){
+        try{
+            Jws<Claims> claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
+            return !claims.getBody().getExpiration().before(new Date());
+        }catch(Exception e){
+            return false;
+        }
     }
 }
