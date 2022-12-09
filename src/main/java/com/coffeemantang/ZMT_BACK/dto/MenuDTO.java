@@ -17,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 public class MenuDTO {
 
-    @NotNull
     private int menuId;
 
     @NotBlank

@@ -85,7 +85,7 @@ public class ReviewService {
                 // 경로 구분자 File.separator 사용
                 // String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
 
-                String absolutePath = "C:" + File.separator + "zmtImgs" + File.separator + "review";
+                String absolutePath = "C:" + File.separator + "zmtImgs" + File.separator + "reviewImg";
 
                 // 파일을 저장할 세부 경로 지정
                 String path = absolutePath;
@@ -130,14 +130,14 @@ public class ReviewService {
                     // 엔티티 생성
                     ReviewImgEntity reviewImgEntity = ReviewImgEntity.builder()
                             .reviewId(reviewId) // 리뷰아이디
-                            .path(new_file_name)
+                            .path(new_file_name + originalFileExtension)
                             .build();
 
                     // 생성후 리스트에 추가
                     fileList.add(reviewImgEntity);
 
                     // 업로드 한 파일 데이터를 지정한 파일에 저장
-                    file = new File( path + File.separator + new_file_name);
+                    file = new File( path + File.separator + new_file_name + originalFileExtension);
                     multipartFile.transferTo(file);
 
                     // 파일 권한 설정

@@ -75,7 +75,7 @@ public class OptionController {
 
     // 옵션 삭제
     @DeleteMapping("/delete")
-    public String deleteOption(@AuthenticationPrincipal String memberId, int optionId) {
+    public String deleteOption(@AuthenticationPrincipal String memberId, @RequestParam("optionId") int optionId) {
 
         optionService.deleteOption(Integer.parseInt(memberId), optionId);
 

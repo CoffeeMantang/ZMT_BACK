@@ -72,4 +72,7 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
 
     // 가게 아이디로 전체 메뉴 dto 가져오기
     List<MenuEntity> findByStoreId(String storeId);
+
+    // 해당 카테고리의 메뉴 갯수 가져오기
+    long countByCategory(String category);
 }

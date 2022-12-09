@@ -20,7 +20,6 @@ import java.util.List;
 // StoreController를 위한 DTO. StoreInfo를 붙여서 보내야 할 경우 두가지를 합친 DTO를 별도로 만듬
 public class StoreDTO {
 
-    @NotBlank
     private String storeId;
     private List<ReviewDTO> reviewList;
 
@@ -30,44 +29,36 @@ public class StoreDTO {
     
     private List<MenuDTO> menuList;
 
+
     private List<ImageDTO> images; // 이미지 여러개 담아갈 때 사용
     private long reviewCount; // 리뷰갯수
 
-    @NotNull
     private int memberId; // 가게주인
 
-    @NotBlank
     private String name; // 가게명
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime joinDay; // 생성일
 
-    @NotNull
     private int category; // 큰 카테고리
 
     private String thumb; // 가게 썸네일 주소
 
-    @NotBlank
     private String address1; // 큰 주소
 
-    @NotBlank
     private String address2; // 상세주소
 
-    @NotNull
     private int state; // 가게상태, 0:영업준비중, 1:영업중, 2:영업중단
 
-    @NotNull
-    private double addressX;
+    private double addressX; // 경도
 
-    @NotNull
-    private double addressY;
+    private double addressY; // 위도
 
-    @NotNull
     private int hits; // 가게 조회수.
 
     private int bookmark;
 
-    private MultipartFile file;
+    private List<MultipartFile> file;
 
     public StoreDTO(final StoreEntity entity){
         this.storeId = entity.getStoreId();
