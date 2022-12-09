@@ -649,7 +649,7 @@ public class StoreService {
             // 사용자가 선택한 날짜 형식에 맞게 변수에 쿼리 문장 설정
             switch (date) {
                 // 당일
-                case "0" :
+                case "-1" :
                     date1 = LocalDate.now() + " 00:00:00";
                     date2 = LocalDate.now() + " 23:59:59";
                     break;
@@ -661,7 +661,7 @@ public class StoreService {
                     date2 = LocalDate.now() + " 23:59:59";
                     break;
                 // 직접 입력
-                case "-1" :
+                case "0" :
                     date1 = from + " 00:00:00";
                     date2 = to + " 23:59:59";
                     break;
