@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -610,6 +611,24 @@ public class StoreService {
         }
     }
 
+    // 이전 달 구하기
+    public String previousMonth(String date) {
+
+        try {
+
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            calendar.add(calendar.MONTH, -Integer.parseInt(date));
+            String previous = simpleDateFormat.format(calendar.getTime());
+
+            return previous;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("StoreService.previousMonth() : 에러 발생.");
+        }
+    }
+
     // 기간별 수익
     public StatsDTO viewStats(int memberId, HashMap<String, String> map) {
 
@@ -634,20 +653,12 @@ public class StoreService {
                     date1 = LocalDate.now() + " 00:00:00";
                     date2 = LocalDate.now() + " 23:59:59";
                     break;
-                // 1달 전
+                // 1, 3, 6달 전
                 case "1" :
-                    date1 = "DATE_SUB(now(), interval 1 month)";
-                    date2 = "now()";
-                    break;
-                // 3달 전
                 case "3" :
-                    date1 = " DATE_SUB("+LocalDate.now()+", interval 3 month) ";
-                    date2 = LocalDate.now()+"";
-                    break;
-                // 6달 전
                 case "6" :
-                    date1 = "DATE_SUB(now(), interval 6 month)";
-                    date2 = "now()";
+                    date1 = previousMonth(date) + " 00:00:00";
+                    date2 = LocalDate.now() + " 23:59:59";
                     break;
                 // 직접 입력
                 case "-1" :
@@ -684,11 +695,15 @@ public class StoreService {
 
         try {
 
+            int totalProfit, totalCharge;
             // 전체 수익
-            int profit;
-            Integer tempProfit = orderListRepository.selectPriceByDate(2, storeId, date1, date2);
-            if(tempProfit == null) tempProfit = 0;
-            profit = tempProfit;
+            Integer tempTotalProfit = orderListRepository.selectPriceByDate(2, storeId, date1, date2);
+            if(tempTotalProfit == null) tempTotalProfit = 0;
+            totalProfit = tempTotalProfit;
+            // 전체 배달비 수익
+            Integer tempTotalCharge = orderListRepository.selectChargeByDate(2, storeId, date1, date2);
+            if(tempTotalCharge == null) tempTotalCharge = 0;
+            totalCharge = tempTotalCharge;
 
             StatsDTO statsDTO = new StatsDTO();
             List<MenuEntity> menuEntityList = menuRepository.findByStoreId(storeId);
@@ -716,8 +731,9 @@ public class StoreService {
             Comparator<MenuDTO> comparingMenuDTO = Comparator.comparing(MenuDTO::getCount, Comparator.reverseOrder());
             List<MenuDTO> newStatsMenuDTOList = statsMenuDTOList.stream().sorted(comparingMenuDTO).collect(Collectors.toList());
             statsDTO.setMenuDTOList(newStatsMenuDTOList);
-            statsDTO.setProfit(profit);
-            statsDTO.setTotalAll(totalAll);
+            statsDTO.setTotalProfit(totalProfit);
+            statsDTO.setTotalProfitMinusCharge(totalProfit - totalCharge);
+            statsDTO.setSumAllMenus(totalAll);
 
             return statsDTO;
         } catch (Exception e) {
@@ -761,7 +777,7 @@ public class StoreService {
             Comparator<OptionDTO> comparatorOptionDTO = Comparator.comparing(OptionDTO::getCount, Comparator.reverseOrder());
             List<OptionDTO> newStatsOptionDTOList = statsOptionDTOList.stream().sorted(comparatorOptionDTO).collect(Collectors.toList());
             statsDTO.setOptionDTOList(newStatsOptionDTOList);
-            statsDTO.setTotalAll(totalAll);
+            statsDTO.setSumAllOptions(totalAll);
 
             return statsDTO;
         } catch (Exception e) {
@@ -770,7 +786,7 @@ public class StoreService {
         }
     }
 
-//    // 기간별 주문 취소 내역
+//     // 기간별 주문 취소 내역
 //    public StatsDTO viewCancelStats(String storeId, String date1, String date2) {
 //
 //        try {
@@ -779,23 +795,10 @@ public class StoreService {
 //            int profit = orderListRepository.selectPriceByDate(2, storeId, date1, date2);
 //
 //            StatsDTO statsDTO = new StatsDTO();
-//            List<MenuDTO> menuDTOList = .findByStoreId(storeId);
+//            List<OrderListEntity> orderListEntityList = orderListRepository.selectByStateAndDate(3, storeId, date1, date2);
 //            List<MenuDTO> statsMenuDTOList = new ArrayList<>();
 //            int totalAll = 0;
 //
-//            // 가게에 있는 모든 메뉴 대입
-//            for (MenuDTO menuDTO : menuDTOList) {
-//                // 주문내역에 있는 해당 메뉴의 주문 수량 가져오기
-//                int count = orderListRepository.selectQuantityCountByDate(2, menuDTO.getStoreId(), menuDTO.getMenuId(), date1, date2);
-//                // 메뉴 가격과 수량 합치기
-//                int total = menuDTO.getPrice() * count;
-//                // MenuDTO에 넣기
-//                MenuDTO statsMenuDTO = new MenuDTO(menuDTO.getMenuName(), menuDTO.getPrice(), count, total);
-//                // MenuDTO를 MenuDTOList에 넣기
-//                statsMenuDTOList.add(statsMenuDTO);
-//                // 모든 메뉴 판매 수익
-//                totalAll = totalAll + total;
-//            }
 //
 //            // 수량으로 정렬 후 StatsDTO에 넣기
 //            Comparator<MenuDTO> comparingMenuDTO = Comparator.comparing(MenuDTO::getCount, Comparator.reverseOrder());

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface OrderListRepository extends JpaRepository<OrderListEntity, String> {
@@ -29,12 +30,11 @@ public interface OrderListRepository extends JpaRepository<OrderListEntity, Stri
     Integer selectPriceByDate(@Param("state") Integer state, @Param("storeId") String storeId,
                           @Param("date1") String date1, @Param("date2") String date2);
 
-    // 해당 기간 내 메뉴 합계 가져오기
-//    @Query(value = "SELECT SUM(om.price * om.quantity) FROM orderlist ol INNER JOIN ordermenu om " +
-//            "on ol.orderlist_id = om.orderlist_id WHERE ol.state = :state " +
-//            "AND ol.store_id = :storeId AND om.menu_id = :menuId AND ol.order_date between :date1 and :date2", nativeQuery = true)
-//    int selectMenuSumByDate(@Param("state") int state, @Param("storeId") String storeId,
-//                                  @Param("menuId") int menuId, @Param("date1") String date1, @Param("date2") String date2);
+    // 해당 기간 내 전체 배달비 합계 가져오기
+    @Query(value = "SELECT sum(charge) FROM orderlist WHERE state = :state " +
+            "AND store_id = :storeId AND order_date BETWEEN :date1 AND :date2", nativeQuery = true)
+    Integer selectChargeByDate(@Param("state") Integer state, @Param("storeId") String storeId,
+                          @Param("date1") String date1, @Param("date2") String date2);
 
     // 해당 기간 내 메뉴 수량 합계 가져오기
     @Query(value = "SELECT COUNT(om.quantity) FROM orderlist ol INNER JOIN ordermenu om " +
@@ -69,6 +69,12 @@ public interface OrderListRepository extends JpaRepository<OrderListEntity, Stri
     Integer selectOptionSumByDate(@Param("state") int state, @Param("storeId") String storeId,
                               @Param("menuId") int menuId, @Param("optionId") int optionId,
                               @Param("date1") String date1, @Param("date2") String date2);
+
+    // 해당 기간 내 취소한 주문 내역
+    @Query(value = "SELECT * FROM orderlist WHERE state = :state AND store_id = :storeId " +
+            "AND order_date between :date1 and :date2", nativeQuery = true)
+    List<OrderListEntity> selectByStateAndDate(@Param("state") int state, @Param("storeId") String storeId,
+                                               @Param("date1") String date1, @Param("date2") String date2);
 
     long countByMemberIdAndState(int memberId, int state);
 
