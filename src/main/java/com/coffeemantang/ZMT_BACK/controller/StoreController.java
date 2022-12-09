@@ -206,6 +206,19 @@ public class StoreController {
     }
 
     // 기간별 수익
+    // map 요소 : storeId, type, date, from, to, menuId (storeId, type, date는 항상 입력)
+    //
+    // date =
+    // 0 : 직접 캘린더에서 기간 찍음. 0일 경우 from,to도 입력
+    // (선택 기간 시작일이 from, 끝나는 일이 to),
+    // -1 : 당일,
+    // 1 : 1달 전,
+    // 3 : 3달 전,
+    // 6 : 6달 전
+    //
+    // type =
+    // 0 : 해당 기간의 메뉴 리스트
+    // 1 : 해당 메뉴,기간의 옵션 리스트. 1인 경우 menuId에 해당 menuId도 입력.
     @PostMapping("/stats")
     public ResponseEntity<?> viewStats(@AuthenticationPrincipal String memberId, @RequestParam HashMap<String, String> map) {
 
