@@ -14,9 +14,17 @@ import java.util.List;
 @AllArgsConstructor
 public class StatsDTO {
 
-    private int profit;
+    // 전체 수익
+    private int totalProfit;
 
-    private int totalAll;
+    // 전체 수익에서 배달비 뺀 수익
+    private int totalProfitMinusCharge;
+
+    // 메뉴들만 합한 수익
+    private int sumAllMenus;
+
+    // 해당 메뉴의 옵션들만 합한 수익
+    private int sumAllOptions;
 
     private List<MenuDTO> menuDTOList;
 
