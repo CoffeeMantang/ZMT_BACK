@@ -4,7 +4,9 @@ import com.coffeemantang.ZMT_BACK.model.StoreInfoEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface StoreInfoRepository extends JpaRepository<StoreInfoEntity, Integer> {
 
     // storeinfoId로 info 컬럼값 가져오기

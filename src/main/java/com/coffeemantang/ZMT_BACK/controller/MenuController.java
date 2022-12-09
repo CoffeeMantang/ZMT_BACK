@@ -24,7 +24,7 @@ public class MenuController {
 
     //메뉴 추가
     @PostMapping("/add")
-    public ResponseEntity<?> addMenu(@AuthenticationPrincipal String memberId, @RequestBody MenuDTO menuDTO) {
+    public ResponseEntity<?> addMenu(@AuthenticationPrincipal String memberId, MenuDTO menuDTO) {
 
         try {
             menuService.addMenu(menuDTO, Integer.parseInt(memberId));
@@ -38,7 +38,7 @@ public class MenuController {
 
     // 메뉴 수정
     @PostMapping("/update")
-    public ResponseEntity<?> updateMenu(@AuthenticationPrincipal String memberId, @Valid @RequestBody MenuDTO menuDTO) {
+    public ResponseEntity<?> updateMenu(@AuthenticationPrincipal String memberId, MenuDTO menuDTO) {
 
         try {
             MenuEntity menuEntity = menuService.updateMenu(Integer.parseInt(memberId), menuDTO);
@@ -107,6 +107,18 @@ public class MenuController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
 
+    }
+
+    // 메뉴상태변경
+    @GetMapping("/setState")
+    public ResponseEntity<?> setState(@AuthenticationPrincipal String memberId, @RequestParam("menuId") int menuId, @RequestParam("state") int state) throws Exception{
+        try{
+            menuService.setState(Integer.parseInt(memberId), menuId, state);
+            return ResponseEntity.ok().body("ok");
+        }catch(Exception e){
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
     }
 
 

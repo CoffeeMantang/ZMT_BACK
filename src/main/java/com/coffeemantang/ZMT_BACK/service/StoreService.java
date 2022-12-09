@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
@@ -46,99 +47,184 @@ public class StoreService {
     private final OrderListRepository orderListRepository;
 
     // 가게 생성
-    public void create(int memberId, StoreDTO storeDTO) throws IOException {
-        if(storeDTO == null || storeDTO.getMemberId() == 0){
-            log.warn("StoreService.create() : storeEntity에 내용이 부족해요");
-            throw new RuntimeException("StoreService.create() : storeEntity에 내용이 부족해요");
-        } else if (memberRepository.findByMemberId(storeDTO.getMemberId()).getType() != 1) {
-            // 사업자 회원이 아니면 오류 리턴
-            log.warn("사업자 회원이 아닌 회원이 가게생성 시도");
-            throw new RuntimeException("사업자 회원이 아닌 회원이 가게생성 시도");
-        }
+    public String create(int memberId, StoreDTO storeDTO) throws IOException {
 
-        StoreEntity storeEntity = new StoreEntity();
-        storeEntity.setStoreId(null);
-        storeEntity.setMemberId(memberId);
-        storeEntity.setJoinDay(LocalDateTime.now());
-        storeEntity.setState(0);
-        storeEntity.setName(storeDTO.getName());
-        storeEntity.setCategory(storeDTO.getCategory());
-        storeEntity.setAddress1(storeDTO.getAddress1());
-        storeEntity.setAddress2(storeDTO.getAddress2());
-        storeEntity.setAddressX(storeDTO.getAddressX());
-        storeEntity.setAddressY(storeDTO.getAddressY());
-
-        MultipartFile multipartFile = storeDTO.getFile();
-
-        String current_date = null;
-        if(!multipartFile.isEmpty()) {
-            LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-            current_date = now.format(dateTimeFormatter);
-
-            String absolutePath = new File("").getAbsolutePath() + File.separator + File.separator;
-
-            String path = "images" + File.separator + current_date;
-            File file = new File(path);
-
-            if (!file.exists()) {
-                boolean wasSuccessful = file.mkdirs();
-
-                if (!wasSuccessful) {
-                    log.warn("file : was not successful");
-                }
+        try{
+            if(storeDTO == null){
+                log.warn("StoreService.create() : storeEntity에 내용이 부족해요");
+                throw new RuntimeException("StoreService.create() : storeEntity에 내용이 부족해요");
+            } else if (memberRepository.findByMemberId(memberId).getType() != 1) {
+                // 사업자 회원이 아니면 오류 리턴
+                log.warn("사업자 회원이 아닌 회원이 가게생성 시도");
+                throw new RuntimeException("사업자 회원이 아닌 회원이 가게생성 시도");
             }
-            while (true) {
-                String originalFileExtension;
-                String contentType = multipartFile.getContentType();
 
-                if (ObjectUtils.isEmpty(contentType)) {
-                    break;
-                } else {
-                    if (contentType.contains("image/jpeg")) {
-                        originalFileExtension = ".jpg";
-                    } else if (contentType.contains("images/png")) {
-                        originalFileExtension = ".png";
-                    } else {
+            StoreEntity storeEntity = new StoreEntity();
+            storeEntity.setStoreId(null);
+            storeEntity.setMemberId(memberId);
+            storeEntity.setJoinDay(LocalDateTime.now());
+            storeEntity.setState(0);
+            storeEntity.setName(storeDTO.getName());
+            storeEntity.setCategory(storeDTO.getCategory());
+            storeEntity.setAddress1(storeDTO.getAddress1());
+            storeEntity.setAddress2(storeDTO.getAddress2());
+            storeEntity.setAddressX(storeDTO.getAddressX());
+            storeEntity.setAddressY(storeDTO.getAddressY());
+
+            String storeId =  storeRepository.save(storeEntity).getStoreId();
+
+            // 이미지가 있는 경우
+            if(storeDTO.getFile().size() > 0){
+                MultipartFile multipartFile = storeDTO.getFile().get(0);
+
+                String current_date = null;
+                if(!multipartFile.isEmpty()) {
+                    LocalDateTime now = LocalDateTime.now();
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                    current_date = now.format(dateTimeFormatter);
+
+                    String absolutePath = "C:" + File.separator + "zmtImgs" + File.separator + "storeImg";
+
+                    String path = absolutePath;
+                    File file = new File(path);
+
+                    if (!file.exists()) {
+                        boolean wasSuccessful = file.mkdirs();
+
+                        if (!wasSuccessful) {
+                            log.warn("file : was not successful");
+                        }
+                    }
+                    while (true) {
+                        String originalFileExtension;
+                        String contentType = multipartFile.getContentType();
+
+                        if (ObjectUtils.isEmpty(contentType)) {
+                            break;
+                        } else {
+                            if (contentType.contains("image/jpeg")) {
+                                originalFileExtension = ".jpg";
+                            } else if (contentType.contains("images/png")) {
+                                originalFileExtension = ".png";
+                            } else {
+                                break;
+                            }
+                        }
+
+                        // 파일명은 아이디
+                        String new_file_name = String.valueOf(storeId);
+
+                        storeEntity.setThumb(new_file_name + originalFileExtension);
+
+                        // 엔티티 저장
+                        storeRepository.save(storeEntity);
+
+                        file = new File(absolutePath + File.separator + new_file_name + originalFileExtension);
+                        multipartFile.transferTo(file);
+
+                        file.setWritable(true);
+                        file.setReadable(true);
                         break;
                     }
                 }
-
-                String new_file_name = System.nanoTime() + originalFileExtension;
-
-                storeEntity.setThumb(path + file.separator + new_file_name);
-
-                file = new File(absolutePath + path + File.separator + new_file_name);
-                multipartFile.transferTo(file);
-
-                file.setWritable(true);
-                file.setReadable(true);
-                break;
             }
+            return storeId;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
-        storeRepository.save(storeEntity);
     }
 
     // 가게 수정
-    public StoreEntity updateStore(int memberId, @Valid StoreDTO storeDTO) {
+    public StoreEntity updateStore(int memberId, StoreDTO storeDTO) throws Exception {
+        try{
+            // 예외처리 나중에 넣음
 
-        if(memberId != storeDTO.getMemberId()) {
-            log.warn("StoreService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
-            throw new RuntimeException("StoreService.updateOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
+            StoreEntity storeEntity = storeRepository.findByStoreId(storeDTO.getStoreId());
+            storeEntity.setName(storeDTO.getName());
+            storeEntity.setCategory(storeDTO.getCategory());
+            storeEntity.setAddress1(storeDTO.getAddress1());
+            storeEntity.setAddress2(storeDTO.getAddress2());
+            storeEntity.setState(storeDTO.getState());
+            storeEntity.setAddressX(storeDTO.getAddressX());
+            storeEntity.setAddressY(storeDTO.getAddressY());
+            storeRepository.save(storeEntity);
+
+            String storeId = storeDTO.getStoreId();
+
+            // 이미지가 있는 경우
+            if(storeDTO.getFile().size() > 0){
+                MultipartFile multipartFile = storeDTO.getFile().get(0);
+
+                String current_date = null;
+                if(!multipartFile.isEmpty()) {
+
+
+                    LocalDateTime now = LocalDateTime.now();
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                    current_date = now.format(dateTimeFormatter);
+
+                    String absolutePath = "C:" + File.separator + "zmtImgs" + File.separator + "storeImg";
+
+                    String path = absolutePath;
+                    File file = new File(path);
+
+                    if (!file.exists()) {
+                        boolean wasSuccessful = file.mkdirs();
+
+                        if (!wasSuccessful) {
+                            log.warn("file : was not successful");
+                        }
+                    }
+                    while (true) {
+                        String originalFileExtension;
+                        String contentType = multipartFile.getContentType();
+
+                        if (ObjectUtils.isEmpty(contentType)) {
+                            break;
+                        } else {
+                            if (contentType.contains("image/jpeg")) {
+                                originalFileExtension = ".jpg";
+                            } else if (contentType.contains("images/png")) {
+                                originalFileExtension = ".png";
+                            } else {
+                                break;
+                            }
+                        }
+
+                        // 기존에 파일이 있는 경우 기존 파일을 제거하고 진행
+                        if(storeEntity.getThumb() != null && storeEntity.getThumb() != ""){
+                            String tempPath = absolutePath + File.separator + storeEntity.getThumb();
+                            File delFile = new File(tempPath);
+                            // 해당 파일이 존재하는지 한번 더 체크 후 삭제
+                            if(delFile.isFile()){
+                                delFile.delete();
+                            }
+                        }
+
+                        // 파일명은 아이디
+                        String new_file_name = String.valueOf(storeId);
+
+                        storeEntity.setThumb(new_file_name + originalFileExtension);
+
+                        // 엔티티 저장
+                        storeRepository.save(storeEntity);
+
+                        file = new File(absolutePath + File.separator + new_file_name + originalFileExtension);
+                        multipartFile.transferTo(file);
+
+                        file.setWritable(true);
+                        file.setReadable(true);
+                        break;
+                    }
+                }
+            }
+            return storeEntity;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
-
-        StoreEntity storeEntity = storeRepository.findByStoreId(storeDTO.getStoreId());
-        storeEntity.setName(storeDTO.getName());
-        storeEntity.setCategory(storeDTO.getCategory());
-        storeEntity.setAddress1(storeDTO.getAddress1());
-        storeEntity.setAddress2(storeDTO.getAddress2());
-        storeEntity.setState(storeDTO.getState());
-        storeEntity.setAddressX(storeDTO.getAddressX());
-        storeEntity.setAddressY(storeDTO.getAddressY());
-        storeRepository.save(storeEntity);
-
-        return storeEntity;
-
     }
 
     // 가게 삭제
@@ -168,7 +254,7 @@ public class StoreService {
     }
 
     // 가게 보기(클릭했을 때).
-    public StoreDTO viewStore(int memberId, StoreDTO storeDTO) {
+    public StoreDTO viewStore(int memberId, @RequestParam StoreDTO storeDTO) {
 
         StoreEntity storeEntity = storeRepository.findByStoreId(storeDTO.getStoreId());
         StoreDTO newStoreDTO = new StoreDTO(storeEntity);
@@ -202,6 +288,7 @@ public class StoreService {
                         .menuName(menuEntity.getMenuName())
                         .notice(menuEntity.getNotice())
                         .category(menuEntity.getCategory())
+                        .state(menuEntity.getState())
                         .price(menuEntity.getPrice()).build();
                 if (menuImgEntity != null) {
                     menuDTO.setMenuPic("http://localhost:8080/images/menu/" + menuImgEntity.getPath());
@@ -723,4 +810,47 @@ public class StoreService {
 //            throw new RuntimeException("StoreService.viewMenuStats : 기간별 메뉴 통계를 가져오는 중 에러 발생");
 //        }
 //    }
+
+    // 내가 소유한 가게 리스트 가져오기
+    public List<StoreDTO> getMyStore(final int memberId) throws Exception{
+        try{
+            List<StoreEntity> storeEntityList = storeRepository.findByMemberId(memberId);
+            List<StoreDTO> storeDTOList = new ArrayList<>();
+            for(StoreEntity storeEntity : storeEntityList){
+                StoreDTO storeDTO = StoreDTO.builder().storeId(storeEntity.getStoreId())
+                        .name(storeEntity.getName())
+                        .thumb("http://localhost:8080/images/store/" + storeEntity.getThumb()).build();
+                storeDTOList.add(storeDTO);
+            }
+            return storeDTOList;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 가게의 상태 변경하기
+    public void setState(final int memberId, final String storeId, final int state) throws Exception{
+        try{
+            // 0: 영업준비중, 1: 영업중
+            StoreEntity storeEntity = storeRepository.findByStoreId(storeId);
+
+            //validate
+            if(memberId != storeEntity.getMemberId()){
+                log.warn("다른멤버예여");
+                throw new RuntimeException("다른멤버예여");
+            }
+            if(state > 2 || state < 0){
+                log.warn("상태가이상한데");
+                throw new RuntimeException("상태가이상한데");
+            }
+
+            // state 변경 수행
+            storeEntity.setState(state);
+            storeRepository.save(storeEntity);
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 }

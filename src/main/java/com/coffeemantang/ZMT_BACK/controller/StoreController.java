@@ -31,7 +31,7 @@ public class StoreController {
 
     // 가게 생성
     @PostMapping("/create")
-    public ResponseEntity<?> createStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO){
+    public ResponseEntity<?> createStore(@AuthenticationPrincipal String memberId, StoreDTO storeDTO){
         try {
             // StoreDTO를 StoreEntity로 변환
             StoreEntity tempStoreEntity = StoreDTO.toEntity(storeDTO);
@@ -44,21 +44,22 @@ public class StoreController {
             // 가게의 상태 초기화
             tempStoreEntity.setState(0);
             // StoreService를 이용해 StoreEntity 생성
-            storeService.create(Integer.parseInt(memberId), storeDTO);
+            String storeId = storeService.create(Integer.parseInt(memberId), storeDTO);
             // 리턴할 Store DTO 초기화
-            ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+            ResponseDTO responseDTO = ResponseDTO.builder().error(storeId).build();
             // 응답
             return ResponseEntity.ok().body(responseDTO);
         }catch (Exception e){
             // 예외 발생 시 error에 e.getMessage() 넣어 리턴
             ResponseDTO response = ResponseDTO.builder().error(e.getMessage()).build();
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(response);
         }
     }
 
     // 가게 수정
     @PostMapping("/update")
-    public ResponseEntity<?> updateStore(@AuthenticationPrincipal String memberId, @Valid @RequestBody StoreDTO storeDTO) {
+    public ResponseEntity<?> updateStore(@AuthenticationPrincipal String memberId, StoreDTO storeDTO) {
 
         try {
             StoreEntity storeEntity = storeService.updateStore(Integer.parseInt(memberId), storeDTO);
@@ -95,11 +96,11 @@ public class StoreController {
 
     // 가게 보기 (클릭했을 때) (로그인한 유저 입장)
     @PostMapping("/view")
-    public StoreDTO viewStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO) {
+    public ResponseEntity<?> viewStore(@AuthenticationPrincipal String memberId, @RequestBody StoreDTO storeDTO) {
 
         try {
             StoreDTO responseStoreDTO = storeService.viewStore(Integer.parseInt(memberId), storeDTO);
-            return responseStoreDTO;
+            return ResponseEntity.ok().body(responseStoreDTO);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("가게 정보를 가져오는 도중 오류 발생");
@@ -109,7 +110,7 @@ public class StoreController {
 
     // 가게 정보 입력
     @PostMapping("/addinfo")
-    public ResponseEntity<?> addStoreInfo(@AuthenticationPrincipal String memberId, @RequestBody StoreInfoDTO storeInfoDTO) {
+    public ResponseEntity<?> addStoreInfo(@AuthenticationPrincipal String memberId, @RequestBody StoreInfoDTO storeInfoDTO) throws Exception {
 
         try {
             storeInfoService.addStoreInfo(Integer.parseInt(memberId), storeInfoDTO);
@@ -216,6 +217,33 @@ public class StoreController {
             return ResponseEntity.badRequest().body(responseDTO);
         }
 
+    }
+
+    // 내 가게 목록 가져오기(사진, 가게명, 가게아이디)
+    @GetMapping("/getMyStore")
+    public ResponseEntity<?> getMyStore(@AuthenticationPrincipal String memberId) throws Exception{
+        try{
+            List<StoreDTO> list = storeService.getMyStore(Integer.parseInt(memberId));
+            ResponseDTO responseDTO = ResponseDTO.builder().data(Arrays.asList(list.toArray())).build();
+            return ResponseEntity.ok().body(responseDTO);
+        }catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 가게 상태 변경하기
+    @GetMapping("/setStoreState")
+    public ResponseEntity<?> setState(@AuthenticationPrincipal String memberId, @RequestParam("storeId") String storeId,
+                                      @RequestParam("state") int state) throws Exception{
+        try {
+            storeService.setState(Integer.parseInt(memberId), storeId, state);
+            return ResponseEntity.ok().body("ok");
+        }catch (Exception e){
+            e.printStackTrace();
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
     }
 
 
