@@ -34,6 +34,7 @@ public class TokenController {
             String token = tokenProvider.create(memberEntity);
             return ResponseEntity.ok().body(token); // 토큰넣어서 response
         }catch(Exception e){
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

@@ -81,4 +81,6 @@ public interface OrderListRepository extends JpaRepository<OrderListEntity, Stri
     // 해당 멤버의 주문내역 모두 가져오기
     Page<OrderListEntity> findAllByMemberIdAndState(int memberId, int state,Pageable pageable);
 
+    // 가게정보와 state로 날짜순 정렬 - Pageable
+    Page<OrderListEntity> findAllByStoreIdAndStateOrderByTime(String storeId, int state, Pageable pageable);
 }
