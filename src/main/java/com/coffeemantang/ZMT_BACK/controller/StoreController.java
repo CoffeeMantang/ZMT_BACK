@@ -1,9 +1,6 @@
 package com.coffeemantang.ZMT_BACK.controller;
 
-import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
-import com.coffeemantang.ZMT_BACK.dto.StatsDTO;
-import com.coffeemantang.ZMT_BACK.dto.StoreDTO;
-import com.coffeemantang.ZMT_BACK.dto.StoreInfoDTO;
+import com.coffeemantang.ZMT_BACK.dto.*;
 import com.coffeemantang.ZMT_BACK.model.StoreEntity;
 import com.coffeemantang.ZMT_BACK.service.StoreInfoService;
 import com.coffeemantang.ZMT_BACK.service.StoreService;
@@ -18,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -219,13 +217,18 @@ public class StoreController {
     // type =
     // 0 : 해당 기간의 메뉴 리스트
     // 1 : 해당 메뉴,기간의 옵션 리스트. 1인 경우 menuId에 해당 menuId도 입력.
-    @PostMapping("/stats")
-    public ResponseEntity<?> viewStats(@AuthenticationPrincipal String memberId, @RequestParam HashMap<String, String> map) {
+    @GetMapping("/stats")
+    public ResponseEntity<?> viewStats(@AuthenticationPrincipal String memberId, @RequestParam String storeId, @RequestParam String type, @RequestParam String date) throws Exception {
 
         try {
+            HashMap<String, String> map = new HashMap<>();
+            map.put("storeId", storeId);
+            map.put("type", type);
+            map.put("date", date);
             StatsDTO statsDTO = storeService.viewStats(Integer.parseInt(memberId), map);
             return ResponseEntity.ok().body(statsDTO);
         } catch (Exception e) {
+            e.printStackTrace();
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
@@ -260,4 +263,35 @@ public class StoreController {
     }
 
 
+    // 해당 가게의 배달비 목록 가져오기
+    @GetMapping("/getCharge")
+    public ResponseEntity<?> getStoreCharge(@AuthenticationPrincipal String memberId, @RequestParam String storeId) throws Exception{
+        try{
+            List<ChargeDTO> chargeDTOS = storeService.getStoreCharge(Integer.parseInt(memberId), storeId);
+            return ResponseEntity.ok().body(chargeDTOS);
+        }catch (Exception e){
+            e.printStackTrace();
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 해당 가게의 배달비 추가하기
+    @PostMapping("/setCharge")
+    public ResponseEntity<?> setCharge(@AuthenticationPrincipal String memberId, @RequestBody ChargeDTO chargeDTO) throws Exception{
+        try{
+            boolean bool = storeService.setStoreCharge(Integer.parseInt(memberId), chargeDTO);
+            if(bool == false){
+                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
+                return ResponseEntity.badRequest().body(responseDTO);
+            }else{
+                ResponseDTO responseDTO = ResponseDTO.builder().error("ok").build();
+                return ResponseEntity.ok().body(responseDTO);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
 }

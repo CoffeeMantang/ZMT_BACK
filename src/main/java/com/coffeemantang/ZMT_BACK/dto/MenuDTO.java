@@ -54,6 +54,14 @@ public class MenuDTO {
 
     private int total;
 
+    public boolean checkNull(){
+        if(this.files == null){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
     public MenuDTO(final MenuEntity menuEntity) {
 
         this.menuId = menuEntity.getMenuId();

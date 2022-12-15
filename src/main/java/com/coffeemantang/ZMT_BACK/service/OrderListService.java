@@ -45,6 +45,8 @@ public class OrderListService {
     private final StoreRepository storeRepository;
     @Autowired
     private final ReviewRepository reviewRepository;
+    @Autowired
+    private final MemberRepository memberRepository;
 
     // 장바구니 추가
     @Transactional
@@ -325,10 +327,6 @@ public class OrderListService {
     // 결제 완료 후. 주문 대기 상태
     public OrderListEntity waitingOrder(int memberId, OrderListDTO orderListDTO) {
 
-        if (memberId != orderListDTO.getMemberId()) {
-            log.warn("OrderListService.waitingOrder() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
-            throw new RuntimeException("OrderListService.waitingOrder() : 로그인된 유저와 장바구니 소유자가 다릅니다.");
-        }
 
         OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderListDTO.getOrderlistId());
         orderListEntity.setState(1);
@@ -345,11 +343,6 @@ public class OrderListService {
     //주문 수락
     public OrderListEntity acceptOrder(int memberId, OrderListDTO orderListDTO) {
 
-        if (memberId != orderListDTO.getMemberId()) {
-            log.warn("OrderListService.waitingOrder() : 로그인된 유저와 가게 소유자가 다릅니다.");
-            throw new RuntimeException("OrderListService.waitingOrder() : 로그인된 유저와 가게 소유자가 다릅니다.");
-        }
-
         OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderListDTO.getOrderlistId());
         orderListEntity.setState(2);
         // 배달 예상 시간 가져오는 함수 넣을 예정
@@ -360,13 +353,19 @@ public class OrderListService {
 
     }
 
+    //배달완료
+    public OrderListEntity completeOrder(int memberId, OrderListDTO orderListDTO) {
+
+        OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderListDTO.getOrderlistId());
+        orderListEntity.setState(4);
+        orderListRepository.save(orderListEntity);
+
+        return orderListEntity;
+
+    }
+
     //주문 취소
     public OrderListEntity cancelOrder(int memberId, OrderListDTO orderListDTO) {
-
-        if (memberId != orderListDTO.getMemberId()) {
-            log.warn("OrderListService.waitingOrder() : 로그인된 유저와 주문 내역 소유자가 다릅니다.");
-            throw new RuntimeException("OrderListService.waitingOrder() : 로그인된 유저와 주문 내역 소유자가 다릅니다.");
-        }
 
         OrderListEntity orderListEntity = orderListRepository.findByOrderlistId(orderListDTO.getOrderlistId());
         orderListEntity.setState(3);
@@ -507,6 +506,93 @@ public class OrderListService {
             orderListDTO.setOrderMenuDTOList(orderMenuDTOList);
             return orderListDTO;
         }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 해당 가게의 상태에 맞는 주문내역 가져오기
+    public List<OrderListDTO> getStoreOrder(final int memberId, final String storeId, final int state, Pageable pageable) throws Exception{
+        try{
+            // memberId로 검증 추후에 추가
+            // 가게와 상태정보로 최신순으로 정렬된 주문내역 가져옴
+            Page<OrderListEntity> pOrderlistEntity= orderListRepository.findAllByStoreIdAndStateOrderByTime(storeId, state, pageable);
+            List<OrderListEntity> orderListEntityList = pOrderlistEntity.getContent();
+            List<OrderListDTO> olDTOList = new ArrayList<>();
+            // 리턴할 DTO 만들기
+            for(OrderListEntity olEntity : orderListEntityList){
+                // olEntity로 omEntity 찾기
+                List<OrderMenuEntity> omEntityList = orderMenuRepository.findAllByOrderlistId(olEntity.getOrderlistId());
+                List<OrderMenuDTO> omDTOList = new ArrayList<>(); // 메뉴를 담을 list
+                for(OrderMenuEntity omEntity : omEntityList){
+                    // omEntity로 omDTO 만들기
+                    OrderMenuDTO omDTO = OrderMenuDTO.builder().menuId(omEntity.getMenuId()).name(omEntity.getName())
+                            .price(omEntity.getPrice()).quantity(omEntity.getQuantity()).build();
+                    // OrderOptionEntity 찾기
+                    List<OrderOptionEntity> ooEntityList = orderOptionRepository.findAllByOrdermenuId(omEntity.getOrdermenuId());
+                    // OrderMenuDTO에 넣을 List
+                    List<OrderOptionDTO> ooDTOList = new ArrayList<>();
+                    for(OrderOptionEntity ooEntity : ooEntityList){
+                        OrderOptionDTO ooDTO = OrderOptionDTO.builder().optionId(ooEntity.getOptionId())
+                                .name(ooEntity.getName()).price(ooEntity.getPrice()).build();
+                        ooDTOList.add(ooDTO);
+                    }
+                    omDTO.setOrderOptionDTOS(ooDTOList);
+                    omDTOList.add(omDTO);
+                }
+                // 주문한 회원 정보 가져오기
+                MemberEntity memberEntity = memberRepository.findByMemberId(olEntity.getMemberId());
+                MemberRocationEntity mrEntity = memberRocationRepository.findByMemberrocationId(olEntity.getMemberrocationId());
+                OrderListDTO olDTO = OrderListDTO.builder().orderMenuDTOList(omDTOList).memberId(olEntity.getMemberId())
+                                .charge(olEntity.getCharge()).address(olEntity.getAddress()).price(olEntity.getPrice())
+                                .userMessage(olEntity.getUserMessage()).time(olEntity.getTime()).orderlistId(olEntity.getOrderlistId())
+                        .address(mrEntity.getAddress1() + " " + mrEntity.getAddress2()).nickname(mrEntity.getNickname())
+                        .userMessage(olEntity.getUserMessage()).cancelMessage(olEntity.getCancelMessage())
+                        .orderDate(olEntity.getOrderDate()).price(olEntity.getPrice()).charge(olEntity.getCharge())
+                                .nickname(memberEntity.getNickname()).build();
+                olDTOList.add(olDTO);
+            }
+            return olDTOList;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 가게의 배달비 리스트 가져오기
+    public List<ChargeDTO> getStoreCharge(int memberId, String storeId) throws Exception{
+        try{
+            List<ChargeEntity> chargeEntities = chargeRepository.findByStoreId(storeId);
+            List<ChargeDTO> chargeDTOS = new ArrayList<>();
+            for(ChargeEntity chargeEntity : chargeEntities){
+                ChargeDTO chargeDTO = ChargeDTO.builder().chargeId(chargeEntity.getChargeId())
+                        .charge(chargeEntity.getCharge()).dong(chargeEntity.getDong()).build();
+                chargeDTOS.add(chargeDTO);
+            }
+            return chargeDTOS;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 가게의 배달비 추가하기
+    @Transactional
+    public boolean setStoreCharge(int memberId, ChargeDTO chargeDTO) throws Exception{
+        try{
+            String dong = chargeDTO.getDong();
+            int charge = chargeDTO.getCharge(); // 배달비
+            long cnt = chargeRepository.countByStoreIdAndDongContaining(chargeDTO.getStoreId(), chargeDTO.getDong());
+            if(cnt > 0){
+                return false;
+            }
+            // 없는경우엔 추가
+            ChargeEntity chargeEntity = ChargeEntity.builder().charge(chargeDTO.getCharge()).dong(chargeDTO.getDong())
+                    .storeId(chargeDTO.getStoreId()).build();
+            chargeRepository.save(chargeEntity);
+
+            return true;
+        }catch(Exception e){
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }

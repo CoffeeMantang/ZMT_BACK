@@ -6,6 +6,7 @@ import com.coffeemantang.ZMT_BACK.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -631,6 +632,7 @@ public class StoreService {
 
     // 기간별 수익
     public StatsDTO viewStats(int memberId, HashMap<String, String> map) {
+        log.warn("storeId 는 " + map.get("storeId"));
 
         if (memberId != storeRepository.selectMemberIdByStoreId(map.get("storeId"))) {
             log.warn("StoreService.addOption() : 로그인된 유저와 가게 소유자가 다릅니다.");
@@ -851,6 +853,45 @@ public class StoreService {
             // state 변경 수행
             storeEntity.setState(state);
             storeRepository.save(storeEntity);
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 가게의 배달비 리스트 가져오기
+    public List<ChargeDTO> getStoreCharge(int memberId, String storeId) throws Exception{
+        try{
+            List<ChargeEntity> chargeEntities = chargeRepository.findByStoreId(storeId);
+            List<ChargeDTO> chargeDTOS = new ArrayList<>();
+            for(ChargeEntity chargeEntity : chargeEntities){
+                ChargeDTO chargeDTO = ChargeDTO.builder().chargeId(chargeEntity.getChargeId())
+                        .charge(chargeEntity.getCharge()).dong(chargeEntity.getDong()).build();
+                chargeDTOS.add(chargeDTO);
+            }
+            return chargeDTOS;
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    // 가게의 배달비 추가하기
+    @Transactional
+    public boolean setStoreCharge(int memberId, ChargeDTO chargeDTO) throws Exception{
+        try{
+            String dong = chargeDTO.getDong();
+            int charge = chargeDTO.getCharge(); // 배달비
+            long cnt = chargeRepository.countByStoreIdAndDongContaining(chargeDTO.getStoreId(), chargeDTO.getDong());
+            if(cnt > 0){
+                return false;
+            }
+            // 없는경우엔 추가
+            ChargeEntity chargeEntity = ChargeEntity.builder().charge(chargeDTO.getCharge()).dong(chargeDTO.getDong())
+                    .storeId(chargeDTO.getStoreId()).build();
+            chargeRepository.save(chargeEntity);
+
+            return true;
         }catch(Exception e){
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());

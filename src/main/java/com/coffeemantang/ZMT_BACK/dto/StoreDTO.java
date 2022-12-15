@@ -60,6 +60,14 @@ public class StoreDTO {
 
     private List<MultipartFile> file;
 
+    public boolean checkNull(){
+        if(this.file == null){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
     public StoreDTO(final StoreEntity entity){
         this.storeId = entity.getStoreId();
         this.memberId = entity.getMemberId();
@@ -70,6 +78,7 @@ public class StoreDTO {
         this.addressY = entity.getAddressY();
         this.category = entity.getCategory();
         this.state = entity.getState();
+        this.min = entity.getMin();
     }
 
     // DTO를 Entity로 변환하기 위한 메서드
@@ -84,6 +93,7 @@ public class StoreDTO {
                 .addressY(dto.getAddressY())
                 .category(dto.getCategory())
                 .state(dto.getState())
+                .min(dto.getMin())
                 .build();
     }
 }

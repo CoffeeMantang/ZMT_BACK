@@ -31,6 +31,14 @@ public class ReviewDTO {
     private List<String> images;
     private String nickname;
 
+    public boolean checkNull(){
+        if(this.files == null){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
     // ReviewEntity를 ReviewDTO로
     public ReviewDTO (final ReviewEntity reviewEntity){
         this.reviewId = reviewEntity.getReviewId();

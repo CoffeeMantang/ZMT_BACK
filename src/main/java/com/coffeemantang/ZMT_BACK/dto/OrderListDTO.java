@@ -57,6 +57,7 @@ public class OrderListDTO {
 
     private int memberrocationId;
     private int canReview;
+    private String nickname; // 회원 닉네임
 
 
     public OrderListDTO(final OrderListEntity orderListEntity) {

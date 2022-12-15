@@ -4,6 +4,7 @@ import com.coffeemantang.ZMT_BACK.dto.OrderListDTO;
 import com.coffeemantang.ZMT_BACK.dto.OrderMenuDTO;
 import com.coffeemantang.ZMT_BACK.dto.ResponseDTO;
 import com.coffeemantang.ZMT_BACK.model.OrderListEntity;
+import com.coffeemantang.ZMT_BACK.persistence.OrderListRepository;
 import com.coffeemantang.ZMT_BACK.service.OrderListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ import java.util.List;
 public class OrderListController {
 
     private final OrderListService orderListService;
+
+    private final OrderListRepository orderListRepository;
 
     // 장바구니 추가
     @PostMapping("/addbasket")
@@ -81,29 +84,13 @@ public class OrderListController {
     }
 
     // 결제 완료 후. 주문 대기 상태
-    @PostMapping("/waiting")
-    public ResponseEntity<?> waitingOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
-
+    @GetMapping("/waiting")
+    public ResponseEntity<?> waitingOrder(@AuthenticationPrincipal String memberId) {
         try {
-            OrderListEntity orderListEntity = orderListService.waitingOrder(Integer.parseInt(memberId), orderListDTO);
-            if (orderListEntity != null) {
-                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
-                        .orderlistId(orderListEntity.getOrderlistId())
-                        .memberId(orderListEntity.getMemberId())
-                        .storeId(orderListEntity.getStoreId())
-                        .orderDate(orderListEntity.getOrderDate())
-                        .spoon(orderListEntity.getSpoon())
-                        .userMessage(orderListEntity.getUserMessage())
-                        .price(orderListEntity.getPrice())
-                        .charge(orderListEntity.getCharge())
-                        .memberrocationId(orderListEntity.getMemberrocationId())
-                        .orderMenuDTOList(orderListDTO.getOrderMenuDTOList())
-                        .build();
-                return ResponseEntity.ok().body(responseOrderListDTO);
-            } else {
-                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
-                return ResponseEntity.badRequest().body(responseDTO);
-            }
+            OrderListEntity orderListEntity1 = orderListRepository.findByMemberIdAndState(Integer.parseInt(memberId), 0);
+            OrderListDTO orderListDTO1 = OrderListDTO.builder().orderlistId(orderListEntity1.getOrderlistId()).build();
+            OrderListEntity orderListEntity = orderListService.waitingOrder(Integer.parseInt(memberId), orderListDTO1);
+            return ResponseEntity.ok().body("ok");
         } catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
@@ -111,30 +98,29 @@ public class OrderListController {
     }
 
     // 주문 수락
-    @PostMapping("/accept")
-    public ResponseEntity<?> acceptOrder(@AuthenticationPrincipal String memberId, @RequestBody OrderListDTO orderListDTO) {
+    @GetMapping("/accept")
+    public ResponseEntity<?> acceptOrder(@AuthenticationPrincipal String memberId, @RequestParam String orderlistId) {
 
         try {
-            OrderListEntity orderListEntity = orderListService.acceptOrder(Integer.parseInt(memberId), orderListDTO);
-            if (orderListEntity != null) {
-                OrderListDTO responseOrderListDTO = OrderListDTO.builder()
-                        .orderlistId(orderListEntity.getOrderlistId())
-                        .memberId(orderListEntity.getMemberId())
-                        .storeId(orderListEntity.getStoreId())
-                        .orderDate(orderListEntity.getOrderDate())
-                        .spoon(orderListEntity.getSpoon())
-                        .userMessage(orderListEntity.getUserMessage())
-                        .price(orderListEntity.getPrice())
-                        .charge(orderListEntity.getCharge())
-                        .time(orderListEntity.getTime())
-                        .memberrocationId(orderListEntity.getMemberrocationId())
-                        .orderMenuDTOList(orderListDTO.getOrderMenuDTOList())
-                        .build();
-                return ResponseEntity.ok().body(responseOrderListDTO);
-            } else {
-                ResponseDTO responseDTO = ResponseDTO.builder().error("error").build();
-                return ResponseEntity.badRequest().body(responseDTO);
-            }
+            OrderListEntity orderListEntity1 = orderListRepository.findByOrderlistId(orderlistId);
+            OrderListDTO orderListDTO1 = OrderListDTO.builder().orderlistId(orderListEntity1.getOrderlistId()).build();
+            OrderListEntity orderListEntity = orderListService.acceptOrder(Integer.parseInt(memberId), orderListDTO1);
+            return ResponseEntity.ok().body("ok");
+        } catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 주문 수락
+    @GetMapping("/complete")
+    public ResponseEntity<?> completeOrder(@AuthenticationPrincipal String memberId, @RequestParam String orderlistId) {
+
+        try {
+            OrderListEntity orderListEntity1 = orderListRepository.findByOrderlistId(orderlistId);
+            OrderListDTO orderListDTO1 = OrderListDTO.builder().orderlistId(orderListEntity1.getOrderlistId()).build();
+            OrderListEntity orderListEntity = orderListService.completeOrder(Integer.parseInt(memberId), orderListDTO1);
+            return ResponseEntity.ok().body("ok");
         } catch (Exception e) {
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
@@ -204,6 +190,20 @@ public class OrderListController {
             OrderListDTO orderListDTO = orderListService.getBasket(Integer.parseInt(memberId));
             return ResponseEntity.ok().body(orderListDTO);
         }catch (Exception e) {
+            ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
+    }
+
+    // 해당 가게의 상태에 맞는 orderlist 가져옴
+    @GetMapping("/getStoreOrderList")
+    public ResponseEntity<?> getOrderList(@AuthenticationPrincipal String memberId, @RequestParam("storeId") String storeId,
+                                          @RequestParam("state") int state, @PageableDefault(size = 10) Pageable pageable) throws Exception{
+        try{
+            List<OrderListDTO> orderListDTOList = orderListService.getStoreOrder(Integer.parseInt(memberId), storeId, state, pageable);
+            return ResponseEntity.ok().body(orderListDTOList);
+        }catch(Exception e){
+            e.printStackTrace();
             ResponseDTO responseDTO = ResponseDTO.builder().error(e.getMessage()).build();
             return ResponseEntity.badRequest().body(responseDTO);
         }
